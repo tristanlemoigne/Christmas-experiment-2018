@@ -1,4 +1,4 @@
-# Three.js Boilerplate
+# Christmas experiment 2018
 
 ## Setup
 

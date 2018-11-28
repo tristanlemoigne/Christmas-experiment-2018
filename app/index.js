@@ -1,5 +1,4 @@
-import './index.css';
+import "./styles.css"
+import App from "./js/App"
 
-import App from './scripts/App';
-
-window.app = new App();
+window.app = new App()
