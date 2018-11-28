@@ -1,7 +1,8 @@
 // example import asset
 // import imgPath from './assets/img.jpg'
 import "../libs/OrbitControls"
-import Cube from "./Cube"
+import { Cube, Sphere } from "./Cube"
+// import Cube from "./Cube"
 
 export default class App {
     constructor() {
@@ -15,7 +16,7 @@ export default class App {
             0.1,
             1000
         )
-        this.camera.position.set(0, 0, 10)
+        this.camera.position.set(0, 0, 50)
 
         // Renderer
         this.renderer = new THREE.WebGLRenderer({
@@ -40,8 +41,29 @@ export default class App {
     }
 
     launchScene() {
-        let cube = new Cube(1).draw()
+        // Helpers
+        let axesHelper = new THREE.AxesHelper(10)
+        this.scene.add(axesHelper)
+
+        // Lights
+        let ambientLight = new THREE.AmbientLight(0xffffff, 0.5)
+        this.scene.add(ambientLight)
+
+        // let pointLight = new THREE.PointLight(0x00ffff, 1, 100)
+        // pointLight.position.set(10, 10, 0)
+        // this.scene.add(pointLight)
+
+        // let pointLightHelper = new THREE.PointLightHelper(
+        //     pointLight,
+        //     1
+        // )
+        // this.scene.add(pointLightHelper)
+
+        let cube = new Cube(20).draw()
         this.scene.add(cube)
+
+        let sphere = new Sphere(5, 32).draw()
+        this.scene.add(sphere)
     }
 
     update() {
