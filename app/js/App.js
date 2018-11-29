@@ -1,14 +1,9 @@
-// example import asset
-// import imgPath from './assets/img.jpg'
-
 // Libs
-var THREE = require("three")
-const FBXLoader = require("three-fbx-loader")
-const OrbitControls = require("three-orbit-controls")(THREE)
-const OBJLoader = require('three-obj-loader')(THREE);
+import "../utils/OrbitControls"
+import "../utils/OBJLoader"
+
 // Models
-import cubeModel from "../assets/models/cube7.fbx"
-import cubeModel2 from "../assets/models/cube.obj"
+import cubeModel from "../assets/models/cube2.obj"
 
 export default class App {
     constructor() {
@@ -22,7 +17,7 @@ export default class App {
             0.1,
             1000
         )
-        this.camera.position.set(0, 0, 50)
+        this.camera.position.set(0, 0, 10)
 
         // Renderer
         this.renderer = new THREE.WebGLRenderer({
@@ -33,7 +28,7 @@ export default class App {
         this.renderer.setSize(window.innerWidth, window.innerHeight)
 
         // Controls
-        this.controls = new OrbitControls(this.camera)
+        this.controls = new THREE.OrbitControls(this.camera)
 
         // Listeners
         window.addEventListener("resize", this.onWindowResize.bind(this), false)
@@ -47,7 +42,6 @@ export default class App {
 
         // Update loop
         this.update()
-
     }
 
     launchScene() {
@@ -56,48 +50,41 @@ export default class App {
         this.scene.add(axesHelper)
 
         // Lights
-        let ambientLight = new THREE.AmbientLight(0xffffff, 0.5)
+        let ambientLight = new THREE.AmbientLight(0xffffff, 1)
         this.scene.add(ambientLight)
 
-        let pointLight = new THREE.PointLight(0x00ffff, 1, 100)
-        pointLight.position.set(0, 50, 0)
+        let pointLight = new THREE.PointLight(0x00ffff, 1, 20)
+        pointLight.position.set(0, 10, 0)
         this.scene.add(pointLight)
 
         let pointLightHelper = new THREE.PointLightHelper(pointLight, 1)
         this.scene.add(pointLightHelper)
 
-        // console.log(OBJLoader)
-        new THREE.OBJLoader().load(cubeModel2, (mesh) => {
-            console.log(mesh)
-            this.scene.add(mesh)
-        })
-
         // Meshes
-        // this.loadModel(cubeModel, "cube").then((model) => {
-        //     console.log("chargé ! :D", this.modelsArr.cube)
+        this.loadModel(cubeModel, "cube").then(model => {
+            console.log("chargé ! :D", this.modelsArr.cube)
 
-        //     this.modelsArr.cube.scale.set(0.1, 0.1, 0.1)
-        //     this.scene.add(this.modelsArr.cube)
-        // })
+            this.modelsArr.cube.children[0].material = new THREE.MeshLambertMaterial(
+                { color: "white", transparent: true, opacity: 0.5 }
+            )
+            this.modelsArr.cube.children[1].material = new THREE.MeshLambertMaterial(
+                { color: "green" }
+            )
+            this.modelsArr.cube.children[2].material = new THREE.MeshLambertMaterial(
+                { color: "blue" }
+            )
+            this.scene.add(this.modelsArr.cube)
+        })
     }
 
     loadModel(path, id) {
         return new Promise((resolve, reject) => {
-            new FBXLoader().load(path, model => {
+            new THREE.OBJLoader().load(path, model => {
                 this.modelsArr[id] = model
                 resolve()
             })
         })
     }
-
-    // loadModel(path, id) {
-    //     return new Promise((resolve, reject) => {
-    //         OBJLoader().load(path, model => {
-    //             this.modelsArr[id] = model
-    //             resolve()
-    //         })
-    //     })
-    // }
 
     update() {
         this.renderer.render(this.scene, this.camera)
