@@ -3,7 +3,7 @@ import "../utils/OrbitControls"
 import "../utils/OBJLoader"
 
 // Models
-import cubeModel from "../assets/models/cube2.obj"
+import cubeModel from "../assets/models/cube.obj"
 
 export default class App {
     constructor() {
