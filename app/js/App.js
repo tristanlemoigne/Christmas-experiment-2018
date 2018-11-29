@@ -2,17 +2,13 @@
 // import imgPath from './assets/img.jpg'
 
 // Libs
+var THREE = require("three")
 const FBXLoader = require("three-fbx-loader")
 const OrbitControls = require("three-orbit-controls")(THREE)
-
-import { Cube, Sphere } from "./Cube"
-import cubeModel from "../assets/models/cube2.fbx"
-import nx from "../assets/textures/cube/nx.jpg"
-import ny from "../assets/textures/cube/ny.jpg"
-import nz from "../assets/textures/cube/nz.jpg"
-import px from "../assets/textures/cube/px.jpg"
-import py from "../assets/textures/cube/py.jpg"
-import pz from "../assets/textures/cube/pz.jpg"
+const OBJLoader = require('three-obj-loader')(THREE);
+// Models
+import cubeModel from "../assets/models/cube7.fbx"
+import cubeModel2 from "../assets/models/cube.obj"
 
 export default class App {
     constructor() {
@@ -51,6 +47,7 @@ export default class App {
 
         // Update loop
         this.update()
+
     }
 
     launchScene() {
@@ -62,53 +59,26 @@ export default class App {
         let ambientLight = new THREE.AmbientLight(0xffffff, 0.5)
         this.scene.add(ambientLight)
 
-        let pointLight = new THREE.PointLight(0x00ffff, 1, 1000)
-        pointLight.position.set(100, 100, 0)
+        let pointLight = new THREE.PointLight(0x00ffff, 1, 100)
+        pointLight.position.set(0, 50, 0)
         this.scene.add(pointLight)
 
         let pointLightHelper = new THREE.PointLightHelper(pointLight, 1)
         this.scene.add(pointLightHelper)
-        //cubemap
-        var urls = [px, nx, py, ny, pz, nz]
 
-        var reflectionCube = new THREE.CubeTextureLoader().load(urls)
-        reflectionCube.format = THREE.RGBFormat
-        this.scene.background = reflectionCube
-        // this.scene.background = new THREE.Color(0xff00ff)
-
-        var cubeMaterial2 = new THREE.MeshLambertMaterial({
-            // color: 0xff00ff,
-            envMap: reflectionCube,
-            transparent: true,
-            // opacity: 0.5,
-            refractionRatio: 0.1
+        // console.log(OBJLoader)
+        new THREE.OBJLoader().load(cubeModel2, (mesh) => {
+            console.log(mesh)
+            this.scene.add(mesh)
         })
 
-        let cube = new Cube(20).draw()
-        cube.material = cubeMaterial2
+        // Meshes
+        // this.loadModel(cubeModel, "cube").then((model) => {
+        //     console.log("chargé ! :D", this.modelsArr.cube)
 
-        // this.scene.add(cube)
-
-        let sphere = new Sphere(5, 32).draw()
-        // this.scene.add(sphere)
-
-        this.loadModel(cubeModel, "cube").then(() => {
-            console.log("chargé ! :D")
-
-            this.modelsArr.cube.traverse(child => {
-                console.log(child)
-                child.material = new THREE.MeshBasicMaterial({
-                    color: "red"
-                })
-
-                child.material.side = THREE.DoubleSide
-            })
-
-            this.modelsArr.cube.scale.set(0.2, 0.2, 0.2)
-
-            console.log(this.modelsArr.cube)
-            this.scene.add(this.modelsArr.cube)
-        })
+        //     this.modelsArr.cube.scale.set(0.1, 0.1, 0.1)
+        //     this.scene.add(this.modelsArr.cube)
+        // })
     }
 
     loadModel(path, id) {
@@ -119,6 +89,15 @@ export default class App {
             })
         })
     }
+
+    // loadModel(path, id) {
+    //     return new Promise((resolve, reject) => {
+    //         OBJLoader().load(path, model => {
+    //             this.modelsArr[id] = model
+    //             resolve()
+    //         })
+    //     })
+    // }
 
     update() {
         this.renderer.render(this.scene, this.camera)
