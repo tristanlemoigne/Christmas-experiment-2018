@@ -28,8 +28,10 @@
     "webpack-dev-server": "^2.4.5"
   },
   "dependencies": {
-    "webvr-polyfill": "^0.9.38",
     "gsap": "^2.0.2",
-    "three": "^0.98.0"
+    "three": "^0.98.0",
+    "three-fbx-loader": "^1.0.3",
+    "three-orbit-controls": "^82.1.0",
+    "webvr-polyfill": "^0.9.38"
   }
 }

@@ -1,6 +1,7 @@
 class Cube {
     constructor(size) {
         this.size = size
+        this.mesh = this.draw()
     }
 
     draw() {

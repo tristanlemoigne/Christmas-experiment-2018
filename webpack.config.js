@@ -1,87 +1,94 @@
-const path = require('path');
-const webpack = require('webpack');
-const CleanWebpackPlugin = require('clean-webpack-plugin');
-const ExtractTextPlugin = require('extract-text-webpack-plugin');
-const HtmlWebpackPlugin = require('html-webpack-plugin');
-const UglifyJSPlugin = require('uglifyjs-webpack-plugin');
+const path = require("path")
+const webpack = require("webpack")
+const CleanWebpackPlugin = require("clean-webpack-plugin")
+const ExtractTextPlugin = require("extract-text-webpack-plugin")
+const HtmlWebpackPlugin = require("html-webpack-plugin")
+const UglifyJSPlugin = require("uglifyjs-webpack-plugin")
 
 module.exports = function(env) {
     let plugins = [
         new webpack.ProvidePlugin({
-            THREE: 'three',
+            THREE: "three"
         }),
         // clean export folder
-        new CleanWebpackPlugin('dist', {
+        new CleanWebpackPlugin("dist", {
             root: __dirname
         }),
         // create styles css
-        new ExtractTextPlugin(env == 'prod' ? '[name].[contenthash].css' : '[name].css'),
+        new ExtractTextPlugin(
+            env == "prod" ? "[name].[contenthash].css" : "[name].css"
+        ),
         // create vendor bundle with all imported node_modules
         new webpack.optimize.CommonsChunkPlugin({
-            name: 'vendor',
-            minChunks: function (module) {
-               return module.context && module.context.indexOf('node_modules') !== -1;
+            name: "vendor",
+            minChunks: function(module) {
+                return (
+                    module.context &&
+                    module.context.indexOf("node_modules") !== -1
+                )
             }
         }),
         // create webpack manifest separately
         new webpack.optimize.CommonsChunkPlugin({
-            name: 'manifest'
+            name: "manifest"
         }),
         // create html
         new HtmlWebpackPlugin({
-            template: 'index.html',
-            chunksSortMode: 'dependency'
-        }),
-    ];
-    if (env == 'dev') {
-
-
-    }
-    else {
-
+            template: "index.html",
+            chunksSortMode: "dependency"
+        })
+    ]
+    if (env == "dev") {
+    } else {
         // uglify
-        plugins.push(new UglifyJSPlugin({
-            sourceMap: false,
-            compress: {
-                warnings: false,
-            },
-        }));
+        plugins.push(
+            new UglifyJSPlugin({
+                sourceMap: false,
+                compress: {
+                    warnings: false
+                }
+            })
+        )
     }
 
     return {
-        context: path.resolve(__dirname, 'app'),
+        context: path.resolve(__dirname, "app"),
         devServer: {
             host: "0.0.0.0",
             disableHostCheck: true
         },
         entry: {
-            main: './index.js'
+            main: "./index.js"
         },
         output: {
-            path: path.resolve(__dirname, 'dist'),
-            filename: env == 'prod' ? '[name].[chunkhash].js' : '[name].js',
+            path: path.resolve(__dirname, "dist"),
+            filename: env == "prod" ? "[name].[chunkhash].js" : "[name].js"
         },
         module: {
-            rules: [{
-                test: /\.js$/,
-                exclude: /(node_modules|bower_components)/,
-                use: {
-                    loader: 'babel-loader',
-                    options: {
-                        presets: ['env']
+            rules: [
+                {
+                    test: /\.js$/,
+                    exclude: /(node_modules|bower_components)/,
+                    use: {
+                        loader: "babel-loader",
+                        options: {
+                            presets: ["env"]
+                        }
                     }
+                },
+                {
+                    test: /\.css$/,
+                    use: ExtractTextPlugin.extract({
+                        use: "css-loader"
+                    })
+                },
+                {
+                    test: [/\.mp3$/, /\.dae$/, /\.jpg$/, /\.obj$/, /\.fbx$/],
+                    use: ["file-loader?name=[path][name].[hash].[ext]"]
                 }
-             },{
-                test: /\.css$/,
-                use: ExtractTextPlugin.extract({
-                    use: 'css-loader'
-                })
-            },{
-                test: [/\.mp3$/, /\.dae$/, /\.jpg$/, /\.obj$/, /\.fbx$/],
-                use: ['file-loader?name=[path][name].[hash].[ext]']
-            }]
+            ]
         },
-        devtool: env == 'dev' ? 'cheap-eval-source-map' : '',
-        plugins: plugins,
+        devtool: env == "dev" ? "cheap-eval-source-map" : "",
+        plugins: plugins
     }
-};
+}
