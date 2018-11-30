@@ -3,7 +3,7 @@ import "../utils/OrbitControls"
 import "../utils/OBJLoader"
 
 // Models
-import cubeModel from "../assets/models/cube.obj"
+import cubeModel from "../assets/models/model.obj"
 
 export default class App {
     constructor() {
@@ -50,7 +50,7 @@ export default class App {
         this.scene.add(axesHelper)
 
         // Lights
-        let ambientLight = new THREE.AmbientLight(0xffffff, 1)
+        let ambientLight = new THREE.AmbientLight(0xffffff, 0.5)
         this.scene.add(ambientLight)
 
         let pointLight = new THREE.PointLight(0x00ffff, 1, 20)
@@ -63,16 +63,6 @@ export default class App {
         // Meshes
         this.loadModel(cubeModel, "cube").then(model => {
             console.log("chargé ! :D", this.modelsArr.cube)
-
-            this.modelsArr.cube.children[0].material = new THREE.MeshLambertMaterial(
-                { color: "white", transparent: true, opacity: 0.5 }
-            )
-            this.modelsArr.cube.children[1].material = new THREE.MeshLambertMaterial(
-                { color: "green" }
-            )
-            this.modelsArr.cube.children[2].material = new THREE.MeshLambertMaterial(
-                { color: "blue" }
-            )
             this.scene.add(this.modelsArr.cube)
         })
     }
