@@ -2,8 +2,13 @@
 import "../utils/OrbitControls"
 import "../utils/OBJLoader"
 
+// Classes
+import Fire from "./Fire2"
+
 // Models
 import cubeModel from "../assets/models/model.obj"
+
+
 
 export default class App {
     constructor() {
@@ -30,18 +35,19 @@ export default class App {
         // Controls
         this.controls = new THREE.OrbitControls(this.camera)
 
+        // Timer
+        this.clock = new THREE.Clock()
+
         // Listeners
         window.addEventListener("resize", this.onWindowResize.bind(this), false)
         this.onWindowResize()
 
         // Scene settings
         this.modelsArr = []
+        this.texturesArr = []
 
         // Start scene
         this.launchScene()
-
-        // Update loop
-        this.update()
     }
 
     launchScene() {
@@ -60,10 +66,20 @@ export default class App {
         let pointLightHelper = new THREE.PointLightHelper(pointLight, 1)
         this.scene.add(pointLightHelper)
 
+        
+
         // Meshes
         this.loadModel(cubeModel, "cube").then(model => {
             console.log("chargé ! :D", this.modelsArr.cube)
             this.scene.add(this.modelsArr.cube)
+        })
+        
+        this.loadTexture("/app/assets/textures/fire2.png", "fireTexture").then(fireTexture => {
+            this.fire = new Fire(fireTexture).draw()
+            this.scene.add(this.fire)
+
+            // Update loop
+            this.update()
         })
     }
 
@@ -76,7 +92,19 @@ export default class App {
         })
     }
 
+    loadTexture(path, id) {
+        return new Promise((resolve, reject) => {
+            new THREE.TextureLoader().load(path, texture => {
+                resolve(texture)
+            })
+        })
+    }
+
     update() {
+        this.clock.getDelta()
+        this.time = this.clock.elapsedTime
+        this.fire.update(this.time)
+
         this.renderer.render(this.scene, this.camera)
         requestAnimationFrame(this.update.bind(this))
     }

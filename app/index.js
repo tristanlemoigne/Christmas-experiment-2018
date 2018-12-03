@@ -1,7 +1,4 @@
 import "./styles.css"
-// import App from "./js/App"
-// import Fire from "./js/Fire"
-import Fire from "./js/Fire2"
+import App from "./js/App"
 
-// window.app = new App()
-window.app = new Fire()
+window.app = new App()
