@@ -3,12 +3,32 @@ import "../utils/OrbitControls"
 import "../utils/OBJLoader"
 
 // Classes
-import Fire from "./Fire2"
+import Fire from "./Fire"
 
-// Models
-import cubeModel from "../assets/models/model.obj"
+class Flake {
+    constructor(size, texture, color) {
+        this.size = size
+        this.texture = texture
+        this.color = color
 
+        return this.draw()
+    }
 
+    draw() {
+        let geometry = new THREE.Geometry()
+        geometry.vertices.push(new THREE.Vector3())
+        let material = new THREE.PointsMaterial({
+            color: this.color,
+            transparent: true,
+            size: this.size,
+            map: this.texture
+        })
+        // material.needsUpdate = true
+
+        let point = new THREE.Points(geometry, material)
+        return point
+    }
+}
 
 export default class App {
     constructor() {
@@ -35,22 +55,17 @@ export default class App {
         // Controls
         this.controls = new THREE.OrbitControls(this.camera)
 
-        // Timer
-        this.clock = new THREE.Clock()
-
-        // Listeners
-        window.addEventListener("resize", this.onWindowResize.bind(this), false)
-        this.onWindowResize()
-
         // Scene settings
         this.modelsArr = []
         this.texturesArr = []
 
-        // Start scene
-        this.launchScene()
+        // Load all scene elements
+        this.loadElements()
     }
 
     launchScene() {
+        console.log("Assets chargées")
+
         // Helpers
         let axesHelper = new THREE.AxesHelper(10)
         this.scene.add(axesHelper)
@@ -66,20 +81,44 @@ export default class App {
         let pointLightHelper = new THREE.PointLightHelper(pointLight, 1)
         this.scene.add(pointLightHelper)
 
-        
+        // Timer
+        this.clock = new THREE.Clock()
 
-        // Meshes
-        this.loadModel(cubeModel, "cube").then(model => {
-            console.log("chargé ! :D", this.modelsArr.cube)
-            this.scene.add(this.modelsArr.cube)
-        })
-        
-        this.loadTexture("/app/assets/textures/fire2.png", "fireTexture").then(fireTexture => {
-            this.fire = new Fire(fireTexture).draw()
-            this.scene.add(this.fire)
+        // MESHES
+        // Model
+        // this.scene.add(this.modelsArr.model)
 
-            // Update loop
-            this.update()
+        // Fire
+        // this.fire = new Fire(this.texturesArr.fireTexture).draw()
+        // this.scene.add(this.fire)
+
+        // Flakes
+        this.flake = new Flake(2, this.texturesArr.flake1Texture, 0xffffff)
+        this.scene.add(this.flake)
+
+        // Listeners
+        window.addEventListener("resize", this.onWindowResize.bind(this), false)
+        this.onWindowResize()
+
+        // Update loop
+        this.update()
+    }
+
+    loadElements() {
+        Promise.all([
+            // this.loadModel("/app/assets/models/model.obj", "model"),
+            // this.loadTexture("/app/assets/textures/fire2.png", "fireTexture")
+            this.loadTexture(
+                "/app/assets/textures/flake1.png",
+                "flake1Texture"
+            ),
+            this.loadTexture(
+                "/app/assets/textures/flake2.png",
+                "flake2Texture"
+            ),
+            this.loadTexture("/app/assets/textures/flake3.png", "flake3Texture")
+        ]).then(() => {
+            this.launchScene()
         })
     }
 
@@ -95,7 +134,8 @@ export default class App {
     loadTexture(path, id) {
         return new Promise((resolve, reject) => {
             new THREE.TextureLoader().load(path, texture => {
-                resolve(texture)
+                this.texturesArr[id] = texture
+                resolve()
             })
         })
     }
@@ -103,7 +143,9 @@ export default class App {
     update() {
         this.clock.getDelta()
         this.time = this.clock.elapsedTime
-        this.fire.update(this.time)
+        // this.fire.update(this.time)
+
+        this.flake.rotation.y += 1
 
         this.renderer.render(this.scene, this.camera)
         requestAnimationFrame(this.update.bind(this))
@@ -115,3 +157,11 @@ export default class App {
         this.renderer.setSize(window.innerWidth, window.innerHeight)
     }
 }
+
+// SPIRALE
+// for (i=0; i< 720; i++) {
+//     angle = 0.1 * i;
+//     x=(1+angle)*Math.cos(angle);
+//     y=(1+angle)*Math.sin(angle);
+//     context.lineTo(x, y);
+//   }
