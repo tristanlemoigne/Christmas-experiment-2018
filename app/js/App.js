@@ -1,6 +1,7 @@
 // Libs
 import "../utils/OrbitControls"
 import "../utils/OBJLoader"
+import * as dat from '../utils/DatGui'
 
 // Classes
 import Fire from "./Fire"
@@ -9,10 +10,6 @@ class Flake {
     constructor(creationTime, texture) {
         this.creationTime = creationTime
         this.texture = texture
-        this.size = 1
-        this.speed = 0.03
-        this.tornadoAngle = Math.PI / 4
-        Flake.tornadoSize = 10
         this.mesh = this.draw()
     }
 
@@ -21,53 +18,26 @@ class Flake {
         geometry.vertices.push(new THREE.Vector3())
         let material = new THREE.PointsMaterial({
             transparent: true,
-            size: this.size,
+            size: App.options.flakeSize,
             map: this.texture
         })
         // material.needsUpdate = true
 
         let point = new THREE.Points(geometry, material)
-        point.position.set(0, 0, 0)
         return point
     }
 
     update() {
-        this.creationTime += this.speed
-        let posY = this.mesh.position.y + 0.01
-        let radius = posY * this.tornadoAngle
-        let posX = radius * Math.cos(this.creationTime)
+        this.creationTime += App.options.flakeRotationSpeed
+        let posY = this.mesh.position.y + App.options.flakeVerticalSpeed
+        let radius = posY * App.options.tornadoAngle
+        let posX = radius * Math.cos(this.creationTime) 
         let posZ = radius * Math.sin(this.creationTime)
 
-        this.mesh.position.x = posX
+        this.mesh.position.x = posX + App.tornadoPosition.x
         this.mesh.position.y = posY
-        this.mesh.position.z = posZ
-    }
-}
+        this.mesh.position.z = posZ + App.tornadoPosition.z
 
-class Tornado {
-    constructor() {
-        this.flakesCount = 10
-        Tornado.angle = Math.PI / 4
-    }
-
-    draw(texture) {
-        let tornado = new THREE.Group()
-
-        for (let i = 0; i < this.flakesCount; i++) {
-            let angle = App.getRandom(0, 2 * Math.PI)
-
-            let position = {
-                x: angle,
-                y: 0,
-                z: angle
-            }
-
-            let flake = new Flake(position, texture)
-            App.flakesArr.push(flake)
-            tornado.add(flake.mesh)
-        }
-
-        return tornado
     }
 }
 
@@ -102,10 +72,42 @@ export default class App {
         // Controls
         this.controls = new THREE.OrbitControls(this.camera)
 
-        // Scene settings
+        // Scene variables
         this.modelsArr = []
         this.texturesArr = []
         App.flakesArr = []
+        App.tornadoPosition = {
+            x: 0,
+            y: 0,
+            z: 0
+        }
+
+        // Scene constantes
+        App.options = {
+            flakeSize : 1,
+            flakeRotationSpeed : 0.03,
+            flakeVerticalSpeed: 0.004,
+            flakeCreationSpeed : .5,
+            tornadoAngle: Math.PI/6,
+            tornadoHeight: 10,
+            tornadoRadius: 0,
+            tornadoSpeed: 1
+        }
+
+        // GUI
+        this.gui = new dat.GUI({
+            height : App.options.length * 32 - 1
+        })
+
+        this.gui.add(App.options, "flakeSize").min(0.1).max(1)
+        this.gui.add(App.options, "flakeRotationSpeed").min(0.001).max(0.3)
+        this.gui.add(App.options, "flakeVerticalSpeed").min(0.001).max(0.1)
+        this.gui.add(App.options, "flakeCreationSpeed").min(0.1).max(2)
+        this.gui.add(App.options, "tornadoAngle").min(0).max(2*Math.PI)
+        this.gui.add(App.options, "tornadoHeight").min(0).max(20)
+        this.gui.add(App.options, "tornadoRadius").min(0).max(10)
+        this.gui.add(App.options, "tornadoSpeed").min(1).max(10)
+
 
         // Load all scene elements
         this.loadElements()
@@ -178,10 +180,6 @@ export default class App {
         // this.fire = new Fire(this.texturesArr.fireTexture).draw()
         // this.scene.add(this.fire)
 
-        // Flakes
-        // this.tornado = new Tornado().draw(this.texturesArr.flake1Texture)
-        // this.scene.add(this.tornado)
-
         // Listeners
         window.addEventListener("resize", this.onWindowResize.bind(this), false)
         this.onWindowResize()
@@ -195,7 +193,7 @@ export default class App {
         this.currentTime = this.clock.elapsedTime
 
         // Create new flake every seconds
-        if (this.currentTime >= this.lastTime + 1) {
+        if (this.currentTime >= this.lastTime + App.options.flakeCreationSpeed) {
             let flake = new Flake(
                 this.currentTime,
                 this.texturesArr.flake1Texture
@@ -209,13 +207,21 @@ export default class App {
 
         // Update each flakes
         App.flakesArr.forEach(flake => {
-            if (flake.mesh.position.y > Flake.tornadoSize) {
+            if (flake.mesh.position.y > App.options.tornadoHeight) {
                 this.scene.remove(flake.mesh)
                 App.flakesArr.splice(flake.mesh, 1)
             } else {
                 flake.update()
             }
         })
+
+        // Update tornado position
+        App.tornadoPosition = {
+            x: Math.cos(this.currentTime * App.options.tornadoSpeed) * App.options.tornadoRadius,
+            y: 0,
+            z: Math.sin(this.currentTime * App.options.tornadoSpeed) * App.options.tornadoRadius
+        }
+
 
         // this.fire.update(this.time)
         this.renderer.render(this.scene, this.camera)
