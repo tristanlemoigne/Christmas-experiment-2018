@@ -5,41 +5,7 @@ import * as dat from '../utils/DatGui'
 
 // Classes
 import Fire from "./Fire"
-
-class Flake {
-    constructor(creationTime, texture) {
-        this.creationTime = creationTime
-        this.texture = texture
-        this.mesh = this.draw()
-    }
-
-    draw() {
-        let geometry = new THREE.Geometry()
-        geometry.vertices.push(new THREE.Vector3())
-        let material = new THREE.PointsMaterial({
-            transparent: true,
-            size: App.options.flakeSize,
-            map: this.texture
-        })
-        // material.needsUpdate = true
-
-        let point = new THREE.Points(geometry, material)
-        return point
-    }
-
-    update() {
-        this.creationTime += App.options.flakeRotationSpeed
-        let posY = this.mesh.position.y + App.options.flakeVerticalSpeed
-        let radius = posY * App.options.tornadoAngle
-        let posX = radius * Math.cos(this.creationTime) 
-        let posZ = radius * Math.sin(this.creationTime)
-
-        this.mesh.position.x = posX + App.tornadoPosition.x
-        this.mesh.position.y = posY
-        this.mesh.position.z = posZ + App.tornadoPosition.z
-
-    }
-}
+import Tornado from "./Tornado"
 
 export default class App {
     static getRandom(min, max) {
@@ -74,7 +40,7 @@ export default class App {
 
         // Scene variables
         this.modelsArr = []
-        this.texturesArr = []
+        App.texturesArr = []
         App.flakesArr = []
         App.tornadoPosition = {
             x: 0,
@@ -90,8 +56,8 @@ export default class App {
             flakeCreationSpeed : .5,
             tornadoAngle: Math.PI/6,
             tornadoHeight: 10,
-            tornadoRadius: 0,
-            tornadoSpeed: 1
+            tornadoRadius: 3,
+            tornadoSpeed: -1.5
         }
 
         // GUI
@@ -106,7 +72,7 @@ export default class App {
         this.gui.add(App.options, "tornadoAngle").min(0).max(2*Math.PI)
         this.gui.add(App.options, "tornadoHeight").min(0).max(20)
         this.gui.add(App.options, "tornadoRadius").min(0).max(10)
-        this.gui.add(App.options, "tornadoSpeed").min(1).max(10)
+        this.gui.add(App.options, "tornadoSpeed").min(-10).max(10)
 
 
         // Load all scene elements
@@ -116,16 +82,16 @@ export default class App {
     loadElements() {
         Promise.all([
             // this.loadModel("/app/assets/models/model.obj", "model"),
-            // this.loadTexture("/app/assets/textures/fire2.png", "fireTexture")
+            this.loadTexture("/app/assets/textures/fire.png", "fireTexture"),
             this.loadTexture(
-                "/app/assets/textures/flake1.png",
+                "/app/assets/textures/flake-1.png",
                 "flake1Texture"
             ),
             this.loadTexture(
-                "/app/assets/textures/flake2.png",
+                "/app/assets/textures/flake-2.png",
                 "flake2Texture"
             ),
-            this.loadTexture("/app/assets/textures/flake3.png", "flake3Texture")
+            this.loadTexture("/app/assets/textures/flake-3.png", "flake3Texture")
         ]).then(() => {
             this.launchScene()
         })
@@ -143,7 +109,7 @@ export default class App {
     loadTexture(path, id) {
         return new Promise((resolve, reject) => {
             new THREE.TextureLoader().load(path, texture => {
-                this.texturesArr[id] = texture
+                App.texturesArr[id] = texture
                 resolve()
             })
         })
@@ -177,8 +143,12 @@ export default class App {
         // this.scene.add(this.modelsArr.model)
 
         // Fire
-        // this.fire = new Fire(this.texturesArr.fireTexture).draw()
+        // this.fire = new Fire(App.texturesArr.fireTexture).draw()
         // this.scene.add(this.fire)
+
+        // Tornado 
+        this.tornado = new Tornado()
+        this.scene.add(this.tornado.mesh)
 
         // Listeners
         window.addEventListener("resize", this.onWindowResize.bind(this), false)
@@ -192,38 +162,40 @@ export default class App {
         this.clock.getDelta()
         this.currentTime = this.clock.elapsedTime
 
-        // Create new flake every seconds
-        if (this.currentTime >= this.lastTime + App.options.flakeCreationSpeed) {
-            let flake = new Flake(
-                this.currentTime,
-                this.texturesArr.flake1Texture
-            )
+        // // Create new flake every seconds
+        // if (this.currentTime >= this.lastTime + App.options.flakeCreationSpeed) {
+        //     let flake = new Flake(
+        //         this.currentTime,
+        //         [App.texturesArr.flake1Texture, App.texturesArr.flake2Texture, App.texturesArr.flake3Texture]
+        //     )
 
-            App.flakesArr.push(flake)
-            this.scene.add(flake.mesh)
+        //     App.flakesArr.push(flake)
+        //     this.scene.add(flake.mesh)
 
-            this.lastTime = this.currentTime
-        }
+        //     this.lastTime = this.currentTime
+        // }
 
-        // Update each flakes
-        App.flakesArr.forEach(flake => {
-            if (flake.mesh.position.y > App.options.tornadoHeight) {
-                this.scene.remove(flake.mesh)
-                App.flakesArr.splice(flake.mesh, 1)
-            } else {
-                flake.update()
-            }
-        })
+        // // Update each flakes
+        // App.flakesArr.forEach(flake => {
+        //     if (flake.mesh.position.y > App.options.tornadoHeight) {
+        //         this.scene.remove(flake.mesh)
+        //         App.flakesArr.splice(flake.mesh, 1)
+        //     } else {
+        //         flake.update()
+        //     }
+        // })
 
-        // Update tornado position
-        App.tornadoPosition = {
-            x: Math.cos(this.currentTime * App.options.tornadoSpeed) * App.options.tornadoRadius,
-            y: 0,
-            z: Math.sin(this.currentTime * App.options.tornadoSpeed) * App.options.tornadoRadius
-        }
+        // // Update tornado position
+        // App.tornadoPosition = {
+        //     x: Math.cos(this.currentTime * App.options.tornadoSpeed) * App.options.tornadoRadius,
+        //     y: 0,
+        //     z: Math.sin(this.currentTime * App.options.tornadoSpeed) * App.options.tornadoRadius
+        // }
+
+        this.tornado.update(this.currentTime)
 
 
-        // this.fire.update(this.time)
+        // this.fire.update(this.currentTime)
         this.renderer.render(this.scene, this.camera)
         requestAnimationFrame(this.update.bind(this))
     }
