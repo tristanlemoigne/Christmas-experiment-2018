@@ -1,33 +1,32 @@
-import App from "./App"
+import Constants from "../utils/constants"
 
 export default class Flake extends THREE.Points {
-    
     constructor(creationTime, textures) {
         const geometry = new THREE.Geometry()
         geometry.vertices.push(new THREE.Vector3())
 
         const material = new THREE.PointsMaterial({
             transparent: true,
-            size: App.options.flakeSize,
-            map: textures[App.getRandom(0, textures.length - 1)]
+            size: Constants.flakes.size,
+            map: textures[Constants.getRandom(0, textures.length - 1)]
         })
 
         super(geometry, material)
-        this.creationTime = creationTime
+        this._creationTime = creationTime
     }
 
-    update() {
-        this.creationTime += App.options.flakeRotationSpeed
+    update(tornadoPosition) {
+        this._creationTime += Constants.flakes.rotationSpeed
 
-        let posY = this.position.y + App.options.flakeVerticalSpeed
-        let radius = posY * App.options.tornadoAngle
-        let posX = radius * Math.cos(this.creationTime) 
-        let posZ = radius * Math.sin(this.creationTime)
+        let posY = this.position.y + Constants.flakes.verticalSpeed
+        let radius = posY * Constants.tornado.angle
+        let posX = radius * Math.cos(this._creationTime)
+        let posZ = radius * Math.sin(this._creationTime)
 
         this.position.set(
-            posX + App.tornadoPosition.x,
+            posX + tornadoPosition.x,
             posY,
-            posZ + App.tornadoPosition.z
+            posZ + tornadoPosition.z
         )
     }
 }

@@ -1,45 +1,39 @@
-import App from "./App"
 import Flake from "./Flake"
+import Constants from "../utils/constants"
 
-export default class Tornado{
-    constructor(){
-        this.mesh = this.draw()
+export default class Tornado extends THREE.Group {
+    constructor(flakesTextures) {
+        super()
+
+        this._nextTime = Constants.flakes.creationSpeed
+        this.flakesTextures = flakesTextures
     }
 
-    draw(){
-        this.tornado = new THREE.Group()
-        this.lastTime = 0 
-        return this.tornado
-    }
-
-    update(time){
+    update(time) {
         // Create new flake every seconds
-        if (time >= this.lastTime + App.options.flakeCreationSpeed) {
-            let flake = new Flake(
-                time,
-                [App.texturesArr.flake1Texture, App.texturesArr.flake2Texture, App.texturesArr.flake3Texture]
-            )
+        if (time >= this._nextTime) {
+            let flake = new Flake(time, this.flakesTextures)
 
-            this.tornado.add(flake)
-            this.lastTime = time
+            this.add(flake)
+            this._nextTime += Constants.flakes.creationSpeed
         }
 
         // Update each flakes
-        this.tornado.children.forEach(flake => {
-            if (flake.position.y > App.options.tornadoHeight) {
-                this.tornado.remove(flake)                
+        this.children.forEach(flake => {
+            if (flake.position.y > Constants.tornado.size) {
+                this.remove(flake)
             } else {
-                flake.update()
+                flake.update(this.position)
             }
         })
 
-        // // Update tornado position
-        // App.tornadoPosition = {
-        //     x: Math.cos(this.currentTime * App.options.tornadoSpeed) * App.options.tornadoRadius,
-        //     y: 0,
-        //     z: Math.sin(this.currentTime * App.options.tornadoSpeed) * App.options.tornadoRadius
-        // }
+        // Update tornado position
+        this.position.set(
+            Math.cos(time * Constants.tornado.rotationSpeed) *
+                Constants.tornado.rotationRadius,
+            0,
+            Math.sin(time * Constants.tornado.rotationSpeed) *
+                Constants.tornado.rotationRadius
+        )
     }
-
-
 }
