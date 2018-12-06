@@ -96,28 +96,29 @@ export default class App {
 
         // MESHES
         // Model
-        // this.scene.add(this.modelsArr.model)
+        this.scene.add(this.modelsArr.model)
+        console.log(this.modelsArr.model)
 
         // Fire
-        this.fire = new Fire(this.texturesArr.fireTexture)
-        this.scene.add(this.fire)
+        // this.fire = new Fire(this.texturesArr.fireTexture)
+        // this.scene.add(this.fire)
 
         // Tornado
-        this.tornado = new Tornado([
-            this.texturesArr.flake1Texture,
-            this.texturesArr.flake2Texture,
-            this.texturesArr.flake3Texture
-        ])
-        this.scene.add(this.tornado)
+        // this.tornado = new Tornado([
+        //     this.texturesArr.flake1Texture,
+        //     this.texturesArr.flake2Texture,
+        //     this.texturesArr.flake3Texture
+        // ])
+        // this.scene.add(this.tornado)
 
         // GUI
         const gui = new dat.GUI()
 
-        let guiFire = gui.addFolder("Fire")
-        guiFire.add(this.fire.scale, "x", 0, 20)
-        guiFire.add(this.fire.scale, "y", 0, 20)
-        guiFire.add(this.fire.scale, "z", 0, 20)
-        guiFire.open()
+        // let guiFire = gui.addFolder("Fire")
+        // guiFire.add(this.fire.scale, "x", 0, 20)
+        // guiFire.add(this.fire.scale, "y", 0, 20)
+        // guiFire.add(this.fire.scale, "z", 0, 20)
+        // guiFire.open()
 
         let guiTornado = gui.addFolder("Tornado")
         guiTornado.add(Constants.tornado, "size", 0, 20)
@@ -147,8 +148,8 @@ export default class App {
         this.currentTime = this.clock.elapsedTime
 
         // Update all elements
-        this.tornado.update(this.currentTime)
-        this.fire.animate(this.currentTime)
+        // this.tornado.update(this.currentTime)
+        // this.fire.animate(this.currentTime)
 
         // Render scene
         this.renderer.render(this.scene, this.camera)
