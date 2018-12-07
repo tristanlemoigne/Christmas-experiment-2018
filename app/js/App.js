@@ -60,17 +60,13 @@ export default class App {
 
     loadElements() {
         Promise.all([
-            this.loadModel("/app/assets/models/model2.obj", "model"),
+            this.loadModel("/app/assets/models/model.obj", "model"),
             this.loadTexture("/app/assets/textures/fire.png", "fireTexture"),
             this.loadTexture("/app/assets/textures/flake-1.png","flake1Texture"),
             this.loadTexture("/app/assets/textures/flake-2.png","flake2Texture"),
             this.loadTexture("/app/assets/textures/flake-3.png","flake3Texture"),
             this.loadTexture("/app/assets/textures/background.jpg","background"),
-            this.loadTexture("/app/assets/textures/background-2.png","background2"),
-            this.loadTexture("/app/assets/textures/snow.jpg","snow"),
             this.loadTexture("/app/assets/textures/snow-normals.jpg","snowNormals"),
-            this.loadTexture("/app/assets/textures/snow-bumpMap.jpg","snowBump"),
-            this.loadTexture("/app/assets/textures/perlin-noise.png","perlinNoise"),
         ]).then(() => {
             this.launchScene()
         })
@@ -99,11 +95,11 @@ export default class App {
         // Adding scene background
         let sphereBackground = new THREE.Mesh(
             new THREE.SphereBufferGeometry(20, 32, 32),
-            new THREE.MeshBasicMaterial({ map: this.texturesArr.background2 })
+            new THREE.MeshBasicMaterial({ map: this.texturesArr.background })
         )
-        sphereBackground.geometry.scale(-1, 1.2, 1)
-        sphereBackground.position.y += 0
+        sphereBackground.geometry.scale(-1, 1, 1)
         sphereBackground.rotation.y = Math.PI/2
+        sphereBackground.position.y += 2
         this.scene.add(sphereBackground)
 
         // Helpers
@@ -135,8 +131,6 @@ export default class App {
         cubeCamera.renderTarget.texture.minFilter = THREE.LinearMipMapLinearFilter        
 
         // MESHES
-        // MODEL
-
         // Sphere
         let sphere = new THREE.Group()
         let sphereElements = this.modelsArr.model.children.slice(Math.max(this.modelsArr.model.children.length - 3, 1))
@@ -163,8 +157,12 @@ export default class App {
             }
         })
 
+        // sphere.position.y = 4
         this.scene.add(sphere)
         this.scene.add(this.modelsArr.model)
+
+        // Socle
+        // this.modelsArr.model
 
         // Snow
         const snow = new Snow(this.texturesArr.snowNormals)
@@ -173,7 +171,9 @@ export default class App {
 
         // Fire
         this.fire = new Fire(this.texturesArr.fireTexture)
-        this.scene.add(this.fire)
+        this.fire.position.y = 2.8
+        this.fire.scale.set(1.5,1,1.5)
+        sphere.add(this.fire)
 
         // Tornado
         // this.tornado = new Tornado([
@@ -187,9 +187,7 @@ export default class App {
         // const gui = new dat.GUI()
 
         // let guiFire = gui.addFolder("Fire")
-        // guiFire.add(this.fire.scale, "x", 0, 20)
-        // guiFire.add(this.fire.scale, "y", 0, 20)
-        // guiFire.add(this.fire.scale, "z", 0, 20)
+        // guiFire.add(this.fire.position, "y", 2, 3)
         // guiFire.open()
 
         // let guiTornado = gui.addFolder("Tornado")
