@@ -1,4 +1,5 @@
 // Libs
+import SimplexNoise from "simplex-noise"
 import "../utils/OrbitControls"
 import "../utils/OBJLoader"
 import * as dat from "../utils/DatGui"
@@ -13,14 +14,30 @@ export default class App {
         // Scene
         this.scene = new THREE.Scene()
 
-        // Camera
+        // Original Camera
         this.camera = new THREE.PerspectiveCamera(
+            70,
+            window.innerWidth / window.innerHeight,
+            1,
+            200
+        )
+        this.camera.position.set(2, 3, 5)
+        this.camera.lookAt(0,2,0)
+        this.scene.add(this.camera)
+        
+        // Original camera helpers
+        var helper = new THREE.CameraHelper( this.camera );
+        this.scene.add( helper );
+        
+        // Camera test
+        this.cameraTest = new THREE.PerspectiveCamera(
             70,
             window.innerWidth / window.innerHeight,
             1,
             1000
         )
-        this.camera.position.set(0, 0, 10)
+        this.cameraTest.position.set(0, 0, 20)
+        this.scene.add(this.cameraTest)
 
         // Renderer
         this.renderer = new THREE.WebGLRenderer({
@@ -31,11 +48,15 @@ export default class App {
         this.renderer.setSize(window.innerWidth, window.innerHeight)
 
         // Controls
-        new THREE.OrbitControls(this.camera, document.querySelector("canvas"))
+        this.controls = new THREE.OrbitControls(this.camera, document.querySelector("canvas"))
+        this.controls.target = new THREE.Vector3( 0, 2, 0 )
 
         // Scene variables
         this.modelsArr = []
         this.texturesArr = []
+        
+        // Noise
+        this.simplex = new SimplexNoise()
 
         // Load all scene elements
         this.loadElements()
@@ -43,12 +64,17 @@ export default class App {
 
     loadElements() {
         Promise.all([
-            this.loadModel("/app/assets/models/model.obj", "model"),
+            this.loadModel("/app/assets/models/model2.obj", "model"),
             this.loadTexture("/app/assets/textures/fire.png", "fireTexture"),
             this.loadTexture("/app/assets/textures/flake-1.png","flake1Texture"),
             this.loadTexture("/app/assets/textures/flake-2.png","flake2Texture"),
             this.loadTexture("/app/assets/textures/flake-3.png","flake3Texture"),
-            this.loadTexture("/app/assets/textures/background.jpg","background")
+            this.loadTexture("/app/assets/textures/background.jpg","background"),
+            this.loadTexture("/app/assets/textures/background-2.png","background2"),
+            this.loadTexture("/app/assets/textures/snow.jpg","snow"),
+            this.loadTexture("/app/assets/textures/snow-normals.jpg","snowNormals"),
+            this.loadTexture("/app/assets/textures/snow-bumpMap.jpg","snowBump"),
+            this.loadTexture("/app/assets/textures/perlin-noise.png","perlinNoise"),
         ]).then(() => {
             this.launchScene()
         })
@@ -75,12 +101,14 @@ export default class App {
     launchScene() {
         console.log("Assets chargées")
         // Adding scene background
-        let background = new THREE.Mesh(
-            new THREE.SphereBufferGeometry(500, 32, 16),
-            new THREE.MeshBasicMaterial({ map: this.texturesArr.background })
+        let sphereBackground = new THREE.Mesh(
+            new THREE.SphereBufferGeometry(20, 32, 32),
+            new THREE.MeshBasicMaterial({ map: this.texturesArr.background2 })
         )
-        background.geometry.scale(-1, 0.5, 1)
-        this.scene.add(background)
+        sphereBackground.geometry.scale(-1, 1, 1)
+        sphereBackground.position.y += 5
+        sphereBackground.rotation.y = Math.PI/2
+        this.scene.add(sphereBackground)
 
         // Helpers
         let axesHelper = new THREE.AxesHelper(10)
@@ -90,8 +118,8 @@ export default class App {
         let ambientLight = new THREE.AmbientLight(0xffffff, 0.5)
         this.scene.add(ambientLight)
 
-        let pointLight = new THREE.PointLight(0x00ffff, 1, 20)
-        pointLight.position.set(10, 10, 0)
+        let pointLight = new THREE.PointLight(0xffffff, 1, 50)
+        pointLight.position.set(0, 20, 0)
         this.scene.add(pointLight)
 
         let pointLightHelper = new THREE.PointLightHelper(pointLight, 1)
@@ -110,7 +138,7 @@ export default class App {
         // MESHES
         // MODEL
 
-        // Extract Sphere
+        // Sphere
         let sphere = new THREE.Group()
         let sphereElements = this.modelsArr.model.children.slice(Math.max(this.modelsArr.model.children.length - 3, 1))
 
@@ -123,9 +151,9 @@ export default class App {
                 if(child.name === "Sphere"){
                     child.material = new THREE.MeshStandardMaterial({
                         transparent: true,
-                        opacity: 0.4,
-                        metalness: .2 ,
-                        roughness: .2,
+                        opacity: .4,
+                        metalness: .4 ,
+                        roughness: 0,
                         emissive: 0xffffff,
                         emissiveIntensity: 0.4,
                         envMap: cubeCamera.renderTarget.texture
@@ -136,10 +164,44 @@ export default class App {
             }
         })
 
-        sphere.position.y += 2
+        sphere.position.y += 1
         this.scene.add(sphere)
-
         this.scene.add(this.modelsArr.model)
+
+        // Snow
+        var geometry = new THREE.PlaneGeometry( 50, 50, 64, 64);
+        var material = new THREE.MeshStandardMaterial({
+            color: 0xffffff, 
+            side: THREE.DoubleSide, 
+            wireframe: false,
+            normalMap: this.texturesArr.snowNormals,
+            metalness: 0.2,
+            roughness: 0.7,
+            emissive: 0x0000f0,
+            emissiveIntensity: 0.1
+        });
+
+        var plane = new THREE.Mesh( geometry, material );
+        plane.rotation.x = Math.PI/2
+
+
+        for (let i = 0; i < plane.geometry.vertices.length; i++) {
+            let vert = plane.geometry.vertices[i]
+            let noiseVal = this.simplex.noise3D(vert.x * 0.1, vert.y * 0.1, 1)
+
+            vert.z -= Math.abs(noiseVal * 1.2)
+        }
+
+        this.scene.add( plane )
+
+        console.log(this.camera)
+
+        // let fogColor = new THREE.Color(0x000000)
+        // let fogColor = new THREE.Color(0x000066)
+        let fogColor = new THREE.Color(0x00003d)
+        // this.scene.fog = new THREE.Fog( fogColor, this.camera.near , this.camera.far);
+        this.scene.fog = new THREE.Fog( fogColor, 0 , 40);
+        this.renderer.setClearColor( this.scene.fog.color, 1 );
 
 
         // Fire

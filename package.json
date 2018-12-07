@@ -28,6 +28,7 @@
     "webpack-dev-server": "^2.4.5"
   },
   "dependencies": {
+    "simplex-noise": "^2.4.0",
     "three": "^0.98.0",
     "webvr-polyfill": "^0.9.38"
   }
