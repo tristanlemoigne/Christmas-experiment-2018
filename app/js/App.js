@@ -21,13 +21,13 @@ export default class App {
             200
         )
         this.camera.position.set(-2, 4, 6)
-        this.camera.lookAt(0,2,0)
+        this.camera.lookAt(0, 2, 0)
         this.scene.add(this.camera)
-        
+
         // Original camera helpers
-        var helper = new THREE.CameraHelper( this.camera );
-        this.scene.add( helper );
-        
+        var helper = new THREE.CameraHelper(this.camera)
+        this.scene.add(helper)
+
         // Camera test
         this.cameraTest = new THREE.PerspectiveCamera(
             70,
@@ -47,8 +47,11 @@ export default class App {
         this.renderer.setSize(window.innerWidth, window.innerHeight)
 
         // Controls
-        this.controls = new THREE.OrbitControls(this.cameraTest, document.querySelector("canvas"))
-        this.controls.target = new THREE.Vector3( 0, 2, 0 )
+        this.controls = new THREE.OrbitControls(
+            this.cameraTest,
+            document.querySelector("canvas")
+        )
+        this.controls.target = new THREE.Vector3(0, 2, 0)
 
         // Scene variables
         this.modelsArr = []
@@ -62,11 +65,30 @@ export default class App {
         Promise.all([
             this.loadModel("/app/assets/models/model.obj", "model"),
             this.loadTexture("/app/assets/textures/fire.png", "fireTexture"),
-            this.loadTexture("/app/assets/textures/flake-1.png","flake1Texture"),
-            this.loadTexture("/app/assets/textures/flake-2.png","flake2Texture"),
-            this.loadTexture("/app/assets/textures/flake-3.png","flake3Texture"),
-            this.loadTexture("/app/assets/textures/background.jpg","background"),
-            this.loadTexture("/app/assets/textures/snow-normals.jpg","snowNormals"),
+            this.loadTexture(
+                "/app/assets/textures/fire-spritesheet-5.jpg",
+                "fireSpritesheet"
+            ),
+            this.loadTexture(
+                "/app/assets/textures/flake-1.png",
+                "flake1Texture"
+            ),
+            this.loadTexture(
+                "/app/assets/textures/flake-2.png",
+                "flake2Texture"
+            ),
+            this.loadTexture(
+                "/app/assets/textures/flake-3.png",
+                "flake3Texture"
+            ),
+            this.loadTexture(
+                "/app/assets/textures/background.jpg",
+                "background"
+            ),
+            this.loadTexture(
+                "/app/assets/textures/snow-normals.jpg",
+                "snowNormals"
+            )
         ]).then(() => {
             this.launchScene()
         })
@@ -98,7 +120,7 @@ export default class App {
             new THREE.MeshBasicMaterial({ map: this.texturesArr.background })
         )
         sphereBackground.geometry.scale(-1, 1, 1)
-        sphereBackground.rotation.y = Math.PI/2
+        sphereBackground.rotation.y = Math.PI / 2
         sphereBackground.position.y += 2
         this.scene.add(sphereBackground)
 
@@ -108,7 +130,7 @@ export default class App {
 
         // Fog
         let fogColor = new THREE.Color(0x00003d)
-        this.scene.fog = new THREE.Fog( fogColor, 0 , 40)
+        this.scene.fog = new THREE.Fog(fogColor, 0, 40)
 
         // Lights
         let ambientLight = new THREE.AmbientLight(0xffffff, 0.5)
@@ -125,27 +147,35 @@ export default class App {
         this.clock = new THREE.Clock()
         this.currentTime = 0
         this.lastTime = 0
-        
+
+        // this.deltaTime = 0
+        // this.currentTime = 0
+        // this.time = Date.now()
+        // this.lastTime = Date.now()
+
         // Cube camera
         let cubeCamera = new THREE.CubeCamera(1, 1000, 256)
-        cubeCamera.renderTarget.texture.minFilter = THREE.LinearMipMapLinearFilter        
+        cubeCamera.renderTarget.texture.minFilter =
+            THREE.LinearMipMapLinearFilter
 
         // MESHES
         // Sphere
         let sphere = new THREE.Group()
-        let sphereElements = this.modelsArr.model.children.slice(Math.max(this.modelsArr.model.children.length - 3, 1))
+        let sphereElements = this.modelsArr.model.children.slice(
+            Math.max(this.modelsArr.model.children.length - 3, 1)
+        )
 
         sphereElements.forEach(element => {
             sphere.add(element)
         })
 
-        sphere.traverse(child  => {
+        sphere.traverse(child => {
             if (child instanceof THREE.Mesh) {
-                if(child.name === "Sphere"){
+                if (child.name === "Sphere") {
                     child.material = new THREE.MeshStandardMaterial({
                         transparent: true,
-                        opacity: .4,
-                        metalness: .4 ,
+                        opacity: 0.4,
+                        metalness: 0.4,
                         roughness: 0,
                         emissive: 0xffffff,
                         emissiveIntensity: 0.4,
@@ -158,22 +188,34 @@ export default class App {
         })
 
         // sphere.position.y = 4
-        this.scene.add(sphere)
-        this.scene.add(this.modelsArr.model)
+        // this.scene.add(sphere)
+        // this.scene.add(this.modelsArr.model)
 
         // Socle
         // this.modelsArr.model
 
         // Snow
-        const snow = new Snow(this.texturesArr.snowNormals)
-        snow.rotation.x = Math.PI/2
-        this.scene.add(snow)
+        // const snow = new Snow(this.texturesArr.snowNormals)
+        // snow.rotation.x = Math.PI/2
+        // this.scene.add(snow)
+
+        // Fire plane
+        let fireGeometry = new THREE.PlaneGeometry(5, 10, 32)
+
+        let fireMaterial = new THREE.MeshBasicMaterial({
+            color: 0xffff00,
+            side: THREE.DoubleSide,
+            map: this.texturesArr.fireSpritesheet
+        })
+
+        this.fire = new THREE.Mesh(fireGeometry, fireMaterial)
+        this.scene.add(this.fire)
 
         // Fire
-        this.fire = new Fire(this.texturesArr.fireTexture)
-        this.fire.position.y = 2.8
-        this.fire.scale.set(1.5,1,1.5)
-        sphere.add(this.fire)
+        // this.fire = new Fire(this.texturesArr.fireTexture)
+        // this.fire.position.y = 2.8
+        // this.fire.scale.set(1.5,1,1.5)
+        // sphere.add(this.fire)
 
         // Tornado
         // this.tornado = new Tornado([
@@ -214,12 +256,12 @@ export default class App {
 
     update() {
         // Get current time
-        this.clock.getDelta()
+        let delta = this.clock.getDelta()
         this.currentTime = this.clock.elapsedTime
 
         // Update all elements
         // this.tornado.update(this.currentTime)
-        this.fire.animate(this.currentTime)
+        // this.fire.animate(this.currentTime)
 
         // Render scene
         this.renderer.render(this.scene, this.cameraTest)
@@ -232,3 +274,9 @@ export default class App {
         this.renderer.setSize(window.innerWidth, window.innerHeight)
     }
 }
+
+// texture,
+// tilesHoriz,
+// tilesVert,
+// numTiles,
+// tileDispDuration
