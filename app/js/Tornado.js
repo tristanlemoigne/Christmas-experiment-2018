@@ -1,11 +1,11 @@
 import Flake from "./Flake"
-import Constants from "../utils/constants"
+import {tornado, flakes} from "../utils/constants"
 
 export default class Tornado extends THREE.Group {
     constructor(flakesTextures) {
         super()
 
-        this._nextTime = Constants.flakes.creationSpeed
+        this._nextTime = flakes.creationSpeed
         this.flakesTextures = flakesTextures
     }
 
@@ -15,12 +15,12 @@ export default class Tornado extends THREE.Group {
             let flake = new Flake(time, this.flakesTextures)
 
             this.add(flake)
-            this._nextTime += Constants.flakes.creationSpeed
+            this._nextTime += flakes.creationSpeed
         }
 
         // Update each flakes
         this.children.forEach(flake => {
-            if (flake.position.y > Constants.tornado.size) {
+            if (flake.position.y > tornado.size) {
                 this.remove(flake)
             } else {
                 flake.update(this.position)
@@ -29,11 +29,11 @@ export default class Tornado extends THREE.Group {
 
         // Update tornado position
         this.position.set(
-            Math.cos(time * Constants.tornado.rotationSpeed) *
-                Constants.tornado.rotationRadius,
+            Math.cos(time * tornado.rotationSpeed) *
+                tornado.rotationRadius,
             0,
-            Math.sin(time * Constants.tornado.rotationSpeed) *
-                Constants.tornado.rotationRadius
+            Math.sin(time * tornado.rotationSpeed) *
+                tornado.rotationRadius
         )
     }
 }

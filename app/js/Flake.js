@@ -1,4 +1,4 @@
-import Constants from "../utils/constants"
+import {tornado, flakes, getRandom} from "../utils/constants"
 
 export default class Flake extends THREE.Points {
     constructor(creationTime, textures) {
@@ -7,8 +7,8 @@ export default class Flake extends THREE.Points {
 
         const material = new THREE.PointsMaterial({
             transparent: true,
-            size: Constants.flakes.size,
-            map: textures[Constants.getRandom(0, textures.length - 1)]
+            size: flakes.size,
+            map: textures[getRandom(0, textures.length - 1)]
         })
 
         super(geometry, material)
@@ -16,10 +16,10 @@ export default class Flake extends THREE.Points {
     }
 
     update(tornadoPosition) {
-        this._creationTime += Constants.flakes.rotationSpeed
+        this._creationTime += flakes.rotationSpeed
 
-        let posY = this.position.y + Constants.flakes.verticalSpeed
-        let radius = posY * Constants.tornado.angle
+        let posY = this.position.y + flakes.verticalSpeed
+        let radius = posY * tornado.angle
         let posX = radius * Math.cos(this._creationTime)
         let posZ = radius * Math.sin(this._creationTime)
 

@@ -1,13 +1,12 @@
 // Libs
-import SimplexNoise from "simplex-noise"
 import "../utils/OrbitControls"
 import "../utils/OBJLoader"
 import * as dat from "../utils/DatGui"
 
 // Classes
+import Snow from "./Snow"
 import Fire from "./Fire"
 import Tornado from "./Tornado"
-import Constants from "../utils/constants"
 
 export default class App {
     constructor() {
@@ -21,7 +20,7 @@ export default class App {
             1,
             200
         )
-        this.camera.position.set(2, 3, 5)
+        this.camera.position.set(-2, 4, 6)
         this.camera.lookAt(0,2,0)
         this.scene.add(this.camera)
         
@@ -48,15 +47,12 @@ export default class App {
         this.renderer.setSize(window.innerWidth, window.innerHeight)
 
         // Controls
-        this.controls = new THREE.OrbitControls(this.camera, document.querySelector("canvas"))
+        this.controls = new THREE.OrbitControls(this.cameraTest, document.querySelector("canvas"))
         this.controls.target = new THREE.Vector3( 0, 2, 0 )
 
         // Scene variables
         this.modelsArr = []
         this.texturesArr = []
-        
-        // Noise
-        this.simplex = new SimplexNoise()
 
         // Load all scene elements
         this.loadElements()
@@ -105,14 +101,18 @@ export default class App {
             new THREE.SphereBufferGeometry(20, 32, 32),
             new THREE.MeshBasicMaterial({ map: this.texturesArr.background2 })
         )
-        sphereBackground.geometry.scale(-1, 1, 1)
-        sphereBackground.position.y += 5
+        sphereBackground.geometry.scale(-1, 1.2, 1)
+        sphereBackground.position.y += 0
         sphereBackground.rotation.y = Math.PI/2
         this.scene.add(sphereBackground)
 
         // Helpers
         let axesHelper = new THREE.AxesHelper(10)
         this.scene.add(axesHelper)
+
+        // Fog
+        let fogColor = new THREE.Color(0x00003d)
+        this.scene.fog = new THREE.Fog( fogColor, 0 , 40)
 
         // Lights
         let ambientLight = new THREE.AmbientLight(0xffffff, 0.5)
@@ -132,8 +132,7 @@ export default class App {
         
         // Cube camera
         let cubeCamera = new THREE.CubeCamera(1, 1000, 256)
-        cubeCamera.renderTarget.texture.minFilter =
-            THREE.LinearMipMapLinearFilter        
+        cubeCamera.renderTarget.texture.minFilter = THREE.LinearMipMapLinearFilter        
 
         // MESHES
         // MODEL
@@ -164,49 +163,17 @@ export default class App {
             }
         })
 
-        sphere.position.y += 1
         this.scene.add(sphere)
         this.scene.add(this.modelsArr.model)
 
         // Snow
-        var geometry = new THREE.PlaneGeometry( 50, 50, 64, 64);
-        var material = new THREE.MeshStandardMaterial({
-            color: 0xffffff, 
-            side: THREE.DoubleSide, 
-            wireframe: false,
-            normalMap: this.texturesArr.snowNormals,
-            metalness: 0.2,
-            roughness: 0.7,
-            emissive: 0x0000f0,
-            emissiveIntensity: 0.1
-        });
-
-        var plane = new THREE.Mesh( geometry, material );
-        plane.rotation.x = Math.PI/2
-
-
-        for (let i = 0; i < plane.geometry.vertices.length; i++) {
-            let vert = plane.geometry.vertices[i]
-            let noiseVal = this.simplex.noise3D(vert.x * 0.1, vert.y * 0.1, 1)
-
-            vert.z -= Math.abs(noiseVal * 1.2)
-        }
-
-        this.scene.add( plane )
-
-        console.log(this.camera)
-
-        // let fogColor = new THREE.Color(0x000000)
-        // let fogColor = new THREE.Color(0x000066)
-        let fogColor = new THREE.Color(0x00003d)
-        // this.scene.fog = new THREE.Fog( fogColor, this.camera.near , this.camera.far);
-        this.scene.fog = new THREE.Fog( fogColor, 0 , 40);
-        this.renderer.setClearColor( this.scene.fog.color, 1 );
-
+        const snow = new Snow(this.texturesArr.snowNormals)
+        snow.rotation.x = Math.PI/2
+        this.scene.add(snow)
 
         // Fire
-        // this.fire = new Fire(this.texturesArr.fireTexture)
-        // this.scene.add(this.fire)
+        this.fire = new Fire(this.texturesArr.fireTexture)
+        this.scene.add(this.fire)
 
         // Tornado
         // this.tornado = new Tornado([
@@ -217,7 +184,7 @@ export default class App {
         // this.scene.add(this.tornado)
 
         // GUI
-        const gui = new dat.GUI()
+        // const gui = new dat.GUI()
 
         // let guiFire = gui.addFolder("Fire")
         // guiFire.add(this.fire.scale, "x", 0, 20)
@@ -225,19 +192,19 @@ export default class App {
         // guiFire.add(this.fire.scale, "z", 0, 20)
         // guiFire.open()
 
-        let guiTornado = gui.addFolder("Tornado")
-        guiTornado.add(Constants.tornado, "size", 0, 20)
-        guiTornado.add(Constants.tornado, "angle", 0, 2 * Math.PI)
-        guiTornado.add(Constants.tornado, "rotationRadius", 0, 5)
-        guiTornado.add(Constants.tornado, "rotationSpeed", -10, 10)
-        guiTornado.open()
+        // let guiTornado = gui.addFolder("Tornado")
+        // guiTornado.add(Constants.tornado, "size", 0, 20)
+        // guiTornado.add(Constants.tornado, "angle", 0, 2 * Math.PI)
+        // guiTornado.add(Constants.tornado, "rotationRadius", 0, 5)
+        // guiTornado.add(Constants.tornado, "rotationSpeed", -10, 10)
+        // guiTornado.open()
 
-        let guiFlakes = gui.addFolder("Flakes")
-        guiFlakes.add(Constants.flakes, "size", 0, 2)
-        guiFlakes.add(Constants.flakes, "rotationSpeed", -10, 10)
-        guiFlakes.add(Constants.flakes, "verticalSpeed", 0, 0.1)
-        guiFlakes.add(Constants.flakes, "creationSpeed", 0, 2)
-        guiFlakes.open()
+        // let guiFlakes = gui.addFolder("Flakes")
+        // guiFlakes.add(Constants.flakes, "size", 0, 2)
+        // guiFlakes.add(Constants.flakes, "rotationSpeed", -10, 10)
+        // guiFlakes.add(Constants.flakes, "verticalSpeed", 0, 0.1)
+        // guiFlakes.add(Constants.flakes, "creationSpeed", 0, 2)
+        // guiFlakes.open()
 
         // Listeners
         window.addEventListener("resize", this.onWindowResize.bind(this), false)
@@ -254,10 +221,10 @@ export default class App {
 
         // Update all elements
         // this.tornado.update(this.currentTime)
-        // this.fire.animate(this.currentTime)
+        this.fire.animate(this.currentTime)
 
         // Render scene
-        this.renderer.render(this.scene, this.camera)
+        this.renderer.render(this.scene, this.cameraTest)
         requestAnimationFrame(this.update.bind(this))
     }
 
