@@ -7,6 +7,8 @@ import * as dat from "../utils/DatGui"
 import Snow from "./Snow"
 import Fire from "./Fire"
 import Tornado from "./Tornado"
+import SpritesAnimation from "./SpritesAnimation"
+import { SSL_OP_TLS_ROLLBACK_BUG } from "constants"
 
 export default class App {
     constructor() {
@@ -66,8 +68,12 @@ export default class App {
             this.loadModel("/app/assets/models/model.obj", "model"),
             this.loadTexture("/app/assets/textures/fire.png", "fireTexture"),
             this.loadTexture(
-                "/app/assets/textures/fire-spritesheet-5.jpg",
+                "/app/assets/textures/fire-rgb.jpg",
                 "fireSpritesheet"
+            ),
+            this.loadTexture(
+                "/app/assets/textures/fire-alpha.jpg",
+                "fireAlpha"
             ),
             this.loadTexture(
                 "/app/assets/textures/flake-1.png",
@@ -199,19 +205,13 @@ export default class App {
         // snow.rotation.x = Math.PI/2
         // this.scene.add(snow)
 
-        // Fire plane
-        let fireGeometry = new THREE.PlaneGeometry(5, 10, 32)
-
-        let fireMaterial = new THREE.MeshBasicMaterial({
-            color: 0xffff00,
-            side: THREE.DoubleSide,
-            map: this.texturesArr.fireSpritesheet
-        })
-
-        this.fire = new THREE.Mesh(fireGeometry, fireMaterial)
+        // Fire
+        this.fire = new Fire(
+            this.texturesArr.fireSpritesheet,
+            this.texturesArr.fireAlpha
+        )
         this.scene.add(this.fire)
 
-        // Fire
         // this.fire = new Fire(this.texturesArr.fireTexture)
         // this.fire.position.y = 2.8
         // this.fire.scale.set(1.5,1,1.5)
@@ -256,12 +256,12 @@ export default class App {
 
     update() {
         // Get current time
-        let delta = this.clock.getDelta()
+        let deltaTime = this.clock.getDelta()
         this.currentTime = this.clock.elapsedTime
 
         // Update all elements
         // this.tornado.update(this.currentTime)
-        // this.fire.animate(this.currentTime)
+        this.fire.update(deltaTime)
 
         // Render scene
         this.renderer.render(this.scene, this.cameraTest)
@@ -274,9 +274,3 @@ export default class App {
         this.renderer.setSize(window.innerWidth, window.innerHeight)
     }
 }
-
-// texture,
-// tilesHoriz,
-// tilesVert,
-// numTiles,
-// tileDispDuration
