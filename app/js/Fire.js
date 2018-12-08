@@ -1,18 +1,22 @@
+import { fire } from "../utils/constants"
 import SimplexNoise from "simplex-noise"
 import SpritesAnimation from "./SpritesAnimation"
 
 export default class Fire extends THREE.Mesh {
     constructor(map, alphaMap) {
-        const geometry = new THREE.PlaneGeometry(0.8, 0.8, 8, 8)
+        const geometry = new THREE.PlaneGeometry(
+            fire.width,
+            fire.height,
+            fire.quality,
+            fire.quality
+        )
 
         const material = new THREE.MeshBasicMaterial({
-            color: 0xffffff,
+            color: fire.color,
             side: THREE.DoubleSide,
-            // wireframe: true,
             transparent: true,
             map: map,
             alphaMap: alphaMap
-            // wireframe: false
         })
 
         super(geometry, material)
@@ -32,7 +36,7 @@ export default class Fire extends THREE.Mesh {
                 vert.y * 0.9,
                 currentTime / 2
             )
-            vert.z = noiseZ * 0.2
+            vert.z = noiseZ * fire.noiseAmplitude
         }
 
         this.mapTile.update(deltaTime)

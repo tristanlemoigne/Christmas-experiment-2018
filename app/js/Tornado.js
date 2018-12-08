@@ -1,10 +1,11 @@
 import Flake from "./Flake"
-import {tornado, flakes} from "../utils/constants"
+import { tornado, flakes } from "../utils/constants"
 
 export default class Tornado extends THREE.Group {
-    constructor(flakesTextures) {
+    constructor(flakesTextures, positionAngle) {
         super()
 
+        this._positionAngle = positionAngle
         this._nextTime = flakes.creationSpeed
         this.flakesTextures = flakesTextures
     }
@@ -29,10 +30,10 @@ export default class Tornado extends THREE.Group {
 
         // Update tornado position
         this.position.set(
-            Math.cos(time * tornado.rotationSpeed) *
+            Math.cos(time * tornado.rotationSpeed + this._positionAngle) *
                 tornado.rotationRadius,
-            0,
-            Math.sin(time * tornado.rotationSpeed) *
+            this.position.y,
+            Math.sin(time * tornado.rotationSpeed + this._positionAngle) *
                 tornado.rotationRadius
         )
     }

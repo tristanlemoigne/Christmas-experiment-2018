@@ -1,7 +1,15 @@
-export function getRandom(min, max){
+export function getRandom(min, max) {
     min = Math.ceil(min)
     max = Math.floor(max)
     return Math.floor(Math.random() * (max - min + 1)) + min
+}
+
+export const fire = {
+    width: 0.8,
+    height: 0.8,
+    quality: 8,
+    color: 0xffffff,
+    noiseAmplitude: 0.2
 }
 
 export const snow = {
@@ -17,15 +25,23 @@ export const snow = {
 }
 
 export const tornado = {
-    size: 10,
-    angle: Math.PI / 6,
-    rotationRadius: 3,
-    rotationSpeed: -1.5
+    size: 0.85,
+    angle: Math.PI / 8,
+    rotationRadius: 0.25,
+    rotationSpeed: -0.9
 }
 
 export const flakes = {
-    size: 1,
-    rotationSpeed: 0.03,
-    verticalSpeed: 0.004,
-    creationSpeed: 0.5
+    size: 0.07,
+    rotationSpeed: -0.03,
+    verticalSpeed: 0.0016,
+    creationSpeed: 0.1
+}
+
+export default {
+    getRandom,
+    fire,
+    snow,
+    tornado,
+    flakes
 }

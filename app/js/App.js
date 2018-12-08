@@ -1,15 +1,13 @@
 // Libs
 import "../utils/OrbitControls"
 import "../utils/OBJLoader"
+import * as Constants from "../utils/constants"
 import * as dat from "../utils/DatGui"
-import Constants from "../utils/constants"
 
 // Classes
 import Snow from "./Snow"
 import Fire from "./Fire"
 import Tornado from "./Tornado"
-import SpritesAnimation from "./SpritesAnimation"
-import { SSL_OP_TLS_ROLLBACK_BUG } from "constants"
 import VolumetricFire from "./VolumetricFire"
 
 export default class App {
@@ -62,6 +60,7 @@ export default class App {
         this.modelsArr = []
         this.texturesArr = []
         this.fireArr = []
+        this.tornadoArr = []
 
         // Load all scene elements
         this.loadElements()
@@ -90,6 +89,18 @@ export default class App {
             this.loadTexture(
                 "/app/assets/textures/flake-3.png",
                 "flake3Texture"
+            ),
+            this.loadTexture(
+                "/app/assets/textures/flake-4.png",
+                "flake4Texture"
+            ),
+            this.loadTexture(
+                "/app/assets/textures/flake-5.png",
+                "flake5Texture"
+            ),
+            this.loadTexture(
+                "/app/assets/textures/flake-6.png",
+                "flake6Texture"
             ),
             this.loadTexture(
                 "/app/assets/textures/background.jpg",
@@ -156,12 +167,6 @@ export default class App {
         // Timer
         this.clock = new THREE.Clock()
         this.currentTime = 0
-        this.lastTime = 0
-
-        // this.deltaTime = 0
-        // this.currentTime = 0
-        // this.time = Date.now()
-        // this.lastTime = Date.now()
 
         // Cube camera
         let cubeCamera = new THREE.CubeCamera(1, 1000, 256)
@@ -198,7 +203,7 @@ export default class App {
             }
         })
 
-        sphere.position.y = 1
+        sphere.position.y = 2
         this.scene.add(sphere)
 
         // Socle
@@ -215,7 +220,7 @@ export default class App {
         // Snow
         const snow = new Snow(this.texturesArr.snowNormals)
         snow.rotation.x = Math.PI / 2
-        // this.scene.add(snow)
+        this.scene.add(snow)
 
         // Flames
         for (
@@ -250,28 +255,63 @@ export default class App {
         //     this.texturesArr.flake2Texture,
         //     this.texturesArr.flake3Texture
         // ])
-        // this.scene.add(this.tornado)
+
+        // this.tornado.position.y = 1.45
+
+        // this.tornado2 = new Tornado([
+        //     this.texturesArr.flake1Texture,
+        //     this.texturesArr.flake2Texture,
+        //     this.texturesArr.flake3Texture
+        // ])
+
+        // sphere.add(this.tornado)
+        // sphere.add(this.tornado2)
+        // // this.scene.add(this.tornado)
+
+        for (
+            let i = 0, positionAngle = 0;
+            i < 2;
+            i++, positionAngle += Math.PI
+        ) {
+            let texturesArr
+
+            if (i === 0) {
+                texturesArr = [
+                    this.texturesArr.flake1Texture,
+                    this.texturesArr.flake2Texture,
+                    this.texturesArr.flake3Texture
+                ]
+            } else {
+                texturesArr = [
+                    this.texturesArr.flake4Texture,
+                    this.texturesArr.flake5Texture,
+                    this.texturesArr.flake6Texture
+                ]
+            }
+
+            let tornado = new Tornado(texturesArr, positionAngle)
+            tornado.position.y = 1.45
+
+            this.tornadoArr.push(tornado)
+            sphere.add(tornado)
+        }
 
         // GUI
-        // const gui = new dat.GUI()
+        const gui = new dat.GUI()
 
-        // let guiFire = gui.addFolder("Fire")
-        // guiFire.add(this.fire.position, "y", 2, 3)
-        // guiFire.open()
+        let guiTornado = gui.addFolder("Tornado")
+        guiTornado.add(Constants.tornado, "size", 0, 2)
+        guiTornado.add(Constants.tornado, "angle", 0, 2 * Math.PI)
+        guiTornado.add(Constants.tornado, "rotationRadius", 0, 0.8)
+        guiTornado.add(Constants.tornado, "rotationSpeed", -10, 10)
+        guiTornado.open()
 
-        // let guiTornado = gui.addFolder("Tornado")
-        // guiTornado.add(Constants.tornado, "size", 0, 20)
-        // guiTornado.add(Constants.tornado, "angle", 0, 2 * Math.PI)
-        // guiTornado.add(Constants.tornado, "rotationRadius", 0, 5)
-        // guiTornado.add(Constants.tornado, "rotationSpeed", -10, 10)
-        // guiTornado.open()
-
-        // let guiFlakes = gui.addFolder("Flakes")
-        // guiFlakes.add(Constants.flakes, "size", 0, 2)
-        // guiFlakes.add(Constants.flakes, "rotationSpeed", -10, 10)
-        // guiFlakes.add(Constants.flakes, "verticalSpeed", 0, 0.1)
-        // guiFlakes.add(Constants.flakes, "creationSpeed", 0, 2)
-        // guiFlakes.open()
+        let guiFlakes = gui.addFolder("Flakes")
+        guiFlakes.add(Constants.flakes, "size", 0, 0.3)
+        guiFlakes.add(Constants.flakes, "rotationSpeed", -1, 1)
+        guiFlakes.add(Constants.flakes, "verticalSpeed", 0, 0.003)
+        guiFlakes.add(Constants.flakes, "creationSpeed", 0, 0.5)
+        guiFlakes.open()
 
         // Listeners
         window.addEventListener("resize", this.onWindowResize.bind(this), false)
@@ -288,11 +328,14 @@ export default class App {
 
         // Update all elements
         // this.tornado.update(this.currentTime)
-        // this.fire.update(this.currentTime, deltaTime)
+        // this.tornado2.update(this.currentTime)
         this.volumetricFire.animate(this.currentTime)
-
         this.fireArr.forEach(fire => {
             fire.update(this.currentTime, deltaTime)
+        })
+
+        this.tornadoArr.forEach(tornado => {
+            tornado.update(this.currentTime)
         })
 
         // Render scene
