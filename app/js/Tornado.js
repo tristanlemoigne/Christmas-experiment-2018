@@ -2,18 +2,23 @@ import Flake from "./Flake"
 import { tornado, flakes } from "../utils/constants"
 
 export default class Tornado extends THREE.Group {
-    constructor(flakesTextures, positionAngle) {
+    constructor(flakesTextures, positionAngle, flakeRotationSpeed) {
         super()
 
-        this._positionAngle = positionAngle
-        this._nextTime = flakes.creationSpeed
         this.flakesTextures = flakesTextures
+        this._positionAngle = positionAngle
+        this.flakeRotationSpeed = flakeRotationSpeed
+        this._nextTime = flakes.creationSpeed
     }
 
     update(time) {
         // Create new flake every seconds
         if (time >= this._nextTime) {
-            let flake = new Flake(time, this.flakesTextures)
+            let flake = new Flake(
+                time,
+                this.flakesTextures,
+                this.flakeRotationSpeed
+            )
 
             this.add(flake)
             this._nextTime += flakes.creationSpeed

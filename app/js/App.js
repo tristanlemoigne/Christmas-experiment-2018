@@ -59,7 +59,7 @@ export default class App {
         // Scene variables
         this.modelsArr = []
         this.texturesArr = []
-        this.fireArr = []
+        this.flamesArr = []
         this.tornadoArr = []
 
         // Load all scene elements
@@ -131,6 +131,63 @@ export default class App {
                 resolve()
             })
         })
+    }
+
+    generateTornados() {
+        for (
+            let i = 0, positionAngle = 0;
+            i < 2;
+            i++, positionAngle += Math.PI
+        ) {
+            let texturesArr
+            let flakeRotationSpeed
+
+            if (i === 0) {
+                texturesArr = [
+                    this.texturesArr.flake1Texture,
+                    this.texturesArr.flake2Texture,
+                    this.texturesArr.flake3Texture
+                ]
+                flakeRotationSpeed = 1
+            } else {
+                texturesArr = [
+                    this.texturesArr.flake4Texture,
+                    this.texturesArr.flake5Texture,
+                    this.texturesArr.flake6Texture
+                ]
+                flakeRotationSpeed = 2.5
+            }
+
+            let tornado = new Tornado(
+                texturesArr,
+                positionAngle,
+                flakeRotationSpeed
+            )
+
+            tornado.position.y = 1.45
+            this.tornadoArr.push(tornado)
+        }
+    }
+
+    generateFlames() {
+        for (
+            let i = 0, rotation = Math.PI / 2;
+            i < 4;
+            i++, rotation += Math.PI / 2
+        ) {
+            let fire = new Fire(
+                this.texturesArr.fireSpritesheet,
+                this.texturesArr.fireAlpha
+            )
+
+            fire.scale.set(0.5, 0.5, 0.5)
+            fire.position.y = 2.5
+            fire.rotation.y = rotation
+            fire.position.x = Math.cos(rotation) * 0.7
+            fire.position.z = Math.sin(rotation) * 0.7
+
+            this.flamesArr.push(fire)
+        }
     }
 
     launchScene() {
@@ -223,25 +280,10 @@ export default class App {
         this.scene.add(snow)
 
         // Flames
-        for (
-            let i = 0, rotation = Math.PI / 2;
-            i < 4;
-            i++, rotation += Math.PI / 2
-        ) {
-            let fire = new Fire(
-                this.texturesArr.fireSpritesheet,
-                this.texturesArr.fireAlpha
-            )
-
-            fire.scale.set(0.5, 0.5, 0.5)
-            fire.position.y = 2.5
-            fire.rotation.y = rotation
-            fire.position.x = Math.cos(rotation) * 0.7
-            fire.position.z = Math.sin(rotation) * 0.7
-
-            this.fireArr.push(fire)
-            sphere.add(fire)
-        }
+        this.generateFlames()
+        this.flamesArr.forEach(flame => {
+            sphere.add(flame)
+        })
 
         // Volumetric fire
         this.volumetricFire = new VolumetricFire(this.texturesArr.fireTexture)
@@ -249,69 +291,28 @@ export default class App {
         this.volumetricFire.scale.set(0.7, 0.7, 0.7)
         sphere.add(this.volumetricFire)
 
-        // Tornado
-        // this.tornado = new Tornado([
-        //     this.texturesArr.flake1Texture,
-        //     this.texturesArr.flake2Texture,
-        //     this.texturesArr.flake3Texture
-        // ])
-
-        // this.tornado.position.y = 1.45
-
-        // this.tornado2 = new Tornado([
-        //     this.texturesArr.flake1Texture,
-        //     this.texturesArr.flake2Texture,
-        //     this.texturesArr.flake3Texture
-        // ])
-
-        // sphere.add(this.tornado)
-        // sphere.add(this.tornado2)
-        // // this.scene.add(this.tornado)
-
-        for (
-            let i = 0, positionAngle = 0;
-            i < 2;
-            i++, positionAngle += Math.PI
-        ) {
-            let texturesArr
-
-            if (i === 0) {
-                texturesArr = [
-                    this.texturesArr.flake1Texture,
-                    this.texturesArr.flake2Texture,
-                    this.texturesArr.flake3Texture
-                ]
-            } else {
-                texturesArr = [
-                    this.texturesArr.flake4Texture,
-                    this.texturesArr.flake5Texture,
-                    this.texturesArr.flake6Texture
-                ]
-            }
-
-            let tornado = new Tornado(texturesArr, positionAngle)
-            tornado.position.y = 1.45
-
-            this.tornadoArr.push(tornado)
+        // Tornados
+        this.generateTornados()
+        this.tornadoArr.forEach(tornado => {
             sphere.add(tornado)
-        }
+        })
 
         // GUI
-        const gui = new dat.GUI()
+        // const gui = new dat.GUI()
 
-        let guiTornado = gui.addFolder("Tornado")
-        guiTornado.add(Constants.tornado, "size", 0, 2)
-        guiTornado.add(Constants.tornado, "angle", 0, 2 * Math.PI)
-        guiTornado.add(Constants.tornado, "rotationRadius", 0, 0.8)
-        guiTornado.add(Constants.tornado, "rotationSpeed", -10, 10)
-        guiTornado.open()
+        // let guiTornado = gui.addFolder("Tornado")
+        // guiTornado.add(Constants.tornado, "size", 0, 2)
+        // guiTornado.add(Constants.tornado, "angle", 0, 2 * Math.PI)
+        // guiTornado.add(Constants.tornado, "rotationRadius", 0, 0.8)
+        // guiTornado.add(Constants.tornado, "rotationSpeed", -10, 10)
+        // guiTornado.open()
 
-        let guiFlakes = gui.addFolder("Flakes")
-        guiFlakes.add(Constants.flakes, "size", 0, 0.3)
-        guiFlakes.add(Constants.flakes, "rotationSpeed", -1, 1)
-        guiFlakes.add(Constants.flakes, "verticalSpeed", 0, 0.003)
-        guiFlakes.add(Constants.flakes, "creationSpeed", 0, 0.5)
-        guiFlakes.open()
+        // let guiFlakes = gui.addFolder("Flakes")
+        // guiFlakes.add(Constants.flakes, "size", 0, 0.3)
+        // guiFlakes.add(Constants.flakes, "rotationSpeed", -1, 1)
+        // guiFlakes.add(Constants.flakes, "verticalSpeed", 0, 0.003)
+        // guiFlakes.add(Constants.flakes, "creationSpeed", 0, 0.5)
+        // guiFlakes.open()
 
         // Listeners
         window.addEventListener("resize", this.onWindowResize.bind(this), false)
@@ -327,11 +328,9 @@ export default class App {
         this.currentTime = this.clock.elapsedTime
 
         // Update all elements
-        // this.tornado.update(this.currentTime)
-        // this.tornado2.update(this.currentTime)
         this.volumetricFire.animate(this.currentTime)
-        this.fireArr.forEach(fire => {
-            fire.update(this.currentTime, deltaTime)
+        this.flamesArr.forEach(flame => {
+            flame.update(this.currentTime, deltaTime)
         })
 
         this.tornadoArr.forEach(tornado => {
