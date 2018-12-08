@@ -69,7 +69,7 @@ export default class App {
 
     loadElements() {
         Promise.all([
-            this.loadModel("/app/assets/models/model.obj", "model"),
+            this.loadModel("/app/assets/models/model8.obj", "model"),
             this.loadTexture("/app/assets/textures/fire.png", "fireTexture"),
             this.loadTexture(
                 "/app/assets/textures/fire-rgb.jpg",
@@ -202,22 +202,20 @@ export default class App {
         this.scene.add(sphere)
 
         // Socle
-        this.modelsArr.model.traverse(child => {
-            if (child instanceof THREE.Mesh) {
-                console.log(child)
-                if (child.name === "Socle") {
-                    child.geometry.verticesNeedUpdate = true
-                    child.material.wireframe = true
-                }
-            }
-        })
+        // this.modelsArr.model.traverse(child => {
+        //     if (child instanceof THREE.Mesh) {
+        //         if (child.name === "Socle") {
+        //             child.geometry.verticesNeedUpdate = true
+        //         }
+        //     }
+        // })
 
         this.scene.add(this.modelsArr.model)
 
         // Snow
         const snow = new Snow(this.texturesArr.snowNormals)
         snow.rotation.x = Math.PI / 2
-        this.scene.add(snow)
+        // this.scene.add(snow)
 
         // Flames
         for (
