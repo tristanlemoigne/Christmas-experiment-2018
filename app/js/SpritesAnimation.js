@@ -15,6 +15,7 @@ export default class SpritesAnimation {
     }
 
     render() {
+        this._texture.needsUpdate = true
         this._texture.wrapS = this._texture.wrapT = THREE.RepeatWrapping
         this._texture.repeat.set(1 / this._tilesX, 1 / this._tilesY)
     }

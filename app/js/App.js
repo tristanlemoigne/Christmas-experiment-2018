@@ -9,6 +9,7 @@ import Fire from "./Fire"
 import Tornado from "./Tornado"
 import SpritesAnimation from "./SpritesAnimation"
 import { SSL_OP_TLS_ROLLBACK_BUG } from "constants"
+import VolumetricFire from "./VolumetricFire"
 
 export default class App {
     constructor() {
@@ -47,6 +48,7 @@ export default class App {
         })
         this.renderer.setPixelRatio(window.devicePixelRatio)
         this.renderer.setSize(window.innerWidth, window.innerHeight)
+        // this.renderer.sortObjects = false
 
         // Controls
         this.controls = new THREE.OrbitControls(
@@ -185,7 +187,8 @@ export default class App {
                         roughness: 0,
                         emissive: 0xffffff,
                         emissiveIntensity: 0.4,
-                        envMap: cubeCamera.renderTarget.texture
+                        envMap: cubeCamera.renderTarget.texture,
+                        depthWrite: false
                     })
 
                     cubeCamera.update(this.renderer, this.scene)
@@ -193,9 +196,9 @@ export default class App {
             }
         })
 
-        // sphere.position.y = 4
-        // this.scene.add(sphere)
-        // this.scene.add(this.modelsArr.model)
+        sphere.position.y = 1
+        this.scene.add(sphere)
+        this.scene.add(this.modelsArr.model)
 
         // Socle
         // this.modelsArr.model
@@ -210,7 +213,17 @@ export default class App {
             this.texturesArr.fireSpritesheet,
             this.texturesArr.fireAlpha
         )
-        this.scene.add(this.fire)
+        this.fire.position.y = 2.7
+        sphere.add(this.fire)
+
+        // Volumetric fire
+        this.volumetricFire = new VolumetricFire(this.texturesArr.fireTexture)
+        this.volumetricFire.position.y = 2.55
+        this.volumetricFire.scale.set(0.5, 0.5, 0.5)
+        sphere.add(this.volumetricFire)
+
+        // this.fireClone.position.set(5, 0, 0)
+        // this.scene.add(this.fire)
 
         // this.fire = new Fire(this.texturesArr.fireTexture)
         // this.fire.position.y = 2.8
@@ -261,7 +274,8 @@ export default class App {
 
         // Update all elements
         // this.tornado.update(this.currentTime)
-        this.fire.update(deltaTime)
+        this.fire.update(this.currentTime, deltaTime)
+        this.volumetricFire.animate(this.currentTime)
 
         // Render scene
         this.renderer.render(this.scene, this.cameraTest)
