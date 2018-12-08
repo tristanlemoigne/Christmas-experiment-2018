@@ -200,24 +200,26 @@ export default class App {
 
         sphere.position.y = 1
         this.scene.add(sphere)
-        this.scene.add(this.modelsArr.model)
 
         // Socle
-        // this.modelsArr.model
+        this.modelsArr.model.traverse(child => {
+            if (child instanceof THREE.Mesh) {
+                console.log(child)
+                if (child.name === "Socle") {
+                    child.geometry.verticesNeedUpdate = true
+                    child.material.wireframe = true
+                }
+            }
+        })
+
+        this.scene.add(this.modelsArr.model)
 
         // Snow
-        // const snow = new Snow(this.texturesArr.snowNormals)
-        // snow.rotation.x = Math.PI/2
-        // this.scene.add(snow)
+        const snow = new Snow(this.texturesArr.snowNormals)
+        snow.rotation.x = Math.PI / 2
+        this.scene.add(snow)
 
-        // Fire
-        // this.fire = new Fire(
-        //     this.texturesArr.fireSpritesheet,
-        //     this.texturesArr.fireAlpha
-        // )
-        // this.fire.position.y = 2.7
-        // sphere.add(this.fire)
-
+        // Flames
         for (
             let i = 0, rotation = Math.PI / 2;
             i < 4;
@@ -231,8 +233,8 @@ export default class App {
             fire.scale.set(0.5, 0.5, 0.5)
             fire.position.y = 2.5
             fire.rotation.y = rotation
-            fire.position.x = Math.cos(rotation) * 0.8
-            fire.position.z = Math.sin(rotation) * 0.8
+            fire.position.x = Math.cos(rotation) * 0.7
+            fire.position.z = Math.sin(rotation) * 0.7
 
             this.fireArr.push(fire)
             sphere.add(fire)

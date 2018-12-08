@@ -28,11 +28,11 @@ export default class Fire extends THREE.Mesh {
         for (let i = 0; i < this.geometry.vertices.length; i++) {
             let vert = this.geometry.vertices[i]
             let noiseZ = this.simplex.noise3D(
-                vert.x * 0.5,
-                vert.y * 0.5,
+                vert.x * 0.9,
+                vert.y * 0.9,
                 currentTime / 2
             )
-            // vert.z = noiseZ * 0.3
+            vert.z = noiseZ * 0.2
         }
 
         this.mapTile.update(deltaTime)
