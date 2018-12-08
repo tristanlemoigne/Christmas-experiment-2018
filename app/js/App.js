@@ -2,6 +2,7 @@
 import "../utils/OrbitControls"
 import "../utils/OBJLoader"
 import * as dat from "../utils/DatGui"
+import Constants from "../utils/constants"
 
 // Classes
 import Snow from "./Snow"
@@ -60,6 +61,7 @@ export default class App {
         // Scene variables
         this.modelsArr = []
         this.texturesArr = []
+        this.fireArr = []
 
         // Load all scene elements
         this.loadElements()
@@ -209,26 +211,38 @@ export default class App {
         // this.scene.add(snow)
 
         // Fire
-        this.fire = new Fire(
-            this.texturesArr.fireSpritesheet,
-            this.texturesArr.fireAlpha
-        )
-        this.fire.position.y = 2.7
-        sphere.add(this.fire)
+        // this.fire = new Fire(
+        //     this.texturesArr.fireSpritesheet,
+        //     this.texturesArr.fireAlpha
+        // )
+        // this.fire.position.y = 2.7
+        // sphere.add(this.fire)
+
+        for (
+            let i = 0, rotation = Math.PI / 2;
+            i < 4;
+            i++, rotation += Math.PI / 2
+        ) {
+            let fire = new Fire(
+                this.texturesArr.fireSpritesheet,
+                this.texturesArr.fireAlpha
+            )
+
+            fire.scale.set(0.5, 0.5, 0.5)
+            fire.position.y = 2.5
+            fire.rotation.y = rotation
+            fire.position.x = Math.cos(rotation) * 0.8
+            fire.position.z = Math.sin(rotation) * 0.8
+
+            this.fireArr.push(fire)
+            sphere.add(fire)
+        }
 
         // Volumetric fire
         this.volumetricFire = new VolumetricFire(this.texturesArr.fireTexture)
-        this.volumetricFire.position.y = 2.55
-        this.volumetricFire.scale.set(0.5, 0.5, 0.5)
+        this.volumetricFire.position.y = 2.65
+        this.volumetricFire.scale.set(0.7, 0.7, 0.7)
         sphere.add(this.volumetricFire)
-
-        // this.fireClone.position.set(5, 0, 0)
-        // this.scene.add(this.fire)
-
-        // this.fire = new Fire(this.texturesArr.fireTexture)
-        // this.fire.position.y = 2.8
-        // this.fire.scale.set(1.5,1,1.5)
-        // sphere.add(this.fire)
 
         // Tornado
         // this.tornado = new Tornado([
@@ -274,8 +288,12 @@ export default class App {
 
         // Update all elements
         // this.tornado.update(this.currentTime)
-        this.fire.update(this.currentTime, deltaTime)
+        // this.fire.update(this.currentTime, deltaTime)
         this.volumetricFire.animate(this.currentTime)
+
+        this.fireArr.forEach(fire => {
+            fire.update(this.currentTime, deltaTime)
+        })
 
         // Render scene
         this.renderer.render(this.scene, this.cameraTest)
