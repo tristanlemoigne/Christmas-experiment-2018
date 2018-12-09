@@ -68,7 +68,8 @@ export default class App {
 
     loadElements() {
         Promise.all([
-            this.loadModel("/app/assets/models/model8.obj", "model"),
+            this.loadModel("/app/assets/models/model.obj", "model"),
+            this.loadTexture("/app/assets/textures/spirale.jpg", "spirale"),
             this.loadTexture("/app/assets/textures/fire.png", "fireTexture"),
             this.loadTexture(
                 "/app/assets/textures/fire-rgb.jpg",
@@ -257,6 +258,28 @@ export default class App {
 
                     cubeCamera.update(this.renderer, this.scene)
                 }
+
+                if (child.name === "Palissade") {
+                    console.log(child)
+                    // child.material = new THREE.MeshBasicMaterial({
+                    //     map: this.texturesArr.spirale
+                    // })
+
+                    child.material.map = this.texturesArr.spirale
+                }
+
+                if (child.name === "Armature") {
+                    child.material = new THREE.MeshPhongMaterial({
+                        color: 0xff0000,
+                        envMap: cubeCamera.renderTarget.texture,
+                        combine: THREE.MixOperation,
+                        reflectivity: 0.3,
+                        specular: 0x111111,
+                        shininess: 100,
+                        emissive: 0x000000,
+                        emissiveIntensity: 1
+                    })
+                }
             }
         })
 
@@ -266,8 +289,10 @@ export default class App {
         // Socle
         // this.modelsArr.model.traverse(child => {
         //     if (child instanceof THREE.Mesh) {
-        //         if (child.name === "Socle") {
-        //             child.geometry.verticesNeedUpdate = true
+
+        //         if (child.name === "Palissade") {
+        //             console.log(child)
+        //             // child.geometry.verticesNeedUpdate = true
         //         }
         //     }
         // })
