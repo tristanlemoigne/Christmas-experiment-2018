@@ -77,7 +77,7 @@ export default class App {
 
     loadElements() {
         Promise.all([
-            this.loadModel("/app/assets/models/model.obj", "model"),
+            this.loadModel("/app/assets/models/model2.obj", "model"),
             this.loadMusic("/app/assets/musics/song.mp3", "song"),
             this.loadTexture("/app/assets/textures/spirale.jpg", "spirale"),
             this.loadTexture("/app/assets/textures/fire.png", "fireTexture"),
@@ -123,8 +123,7 @@ export default class App {
                 "snowNormals"
             )
         ]).then(() => {
-            console.log("Assets chargées")
-
+            // console.log("Assets chargées")
             const loader = document.querySelector(".loader")
             loader.style.display = "none"
 
@@ -277,7 +276,6 @@ export default class App {
     }
 
     launchScene() {
-        console.log("launch scene")
         const explications = document.querySelector(".explications")
         explications.style.display = "none"
 
@@ -306,9 +304,8 @@ export default class App {
         let pointLight = new THREE.PointLight(0xffffff, 1, 90)
         pointLight.position.set(30, 18, 30)
         pointLight.castShadow = true
-
-        pointLight.shadow.mapSize.width = 2048 // You have there 4K no need to go over 2K
-        pointLight.shadow.mapSize.height = 2048 //
+        pointLight.shadow.mapSize.width = 2048
+        pointLight.shadow.mapSize.height = 2048
         this.scene.add(pointLight)
 
         let pointLight2 = new THREE.PointLight(0xffffff, 1, 25)
@@ -332,7 +329,6 @@ export default class App {
 
         // MESHES
         // Sphere
-        console.log(this.modelsArr.model)
         this.sphere = new THREE.Group()
         let sphereElements = this.modelsArr.model.children.slice(
             Math.max(this.modelsArr.model.children.length - 4, 1)
@@ -353,12 +349,10 @@ export default class App {
                         emissive: 0xffffff,
                         emissiveIntensity: 0.3,
                         envMap: cubeCamera.renderTarget.texture,
-                        depthWrite: false,
-                        bumpMap: this.texturesArr.bumpMap
+                        depthWrite: false
                     })
 
                     child.castShadow = true
-                    // child.receiveShadow = true
                 }
 
                 if (child.name === "Palissade") {
@@ -411,6 +405,13 @@ export default class App {
         this.pushers[2].onStop = this.stopLevitation.bind(this)
 
         this.pushers.forEach(pusher => {
+            pusher.material = new THREE.MeshPhongMaterial({
+                color: 0xff1212,
+                transparent: true,
+                opacity: 0.9,
+                emissive: 0xffffff,
+                emissiveIntensity: 0
+            })
             pusher.canClick = false
         })
 
@@ -422,9 +423,9 @@ export default class App {
         this.scene.add(snow)
 
         // Flames
-        this.startFire()
-        this.startTornados()
-        this.startLevitation()
+        // this.startFire()
+        // this.startTornados()
+        // this.startLevitation()
 
         // GUI
         // const gui = new dat.GUI()
@@ -510,23 +511,23 @@ export default class App {
                 this.renderer.domElement.style.cursor = "pointer"
                 // restore previous intersection object (if it exists) to its original color
                 if (INTERSECTED) {
+                    INTERSECTED.currentHex = INTERSECTED.material.color.getHex()
                     INTERSECTED.material.color.setHex(INTERSECTED.currentHex)
                 }
 
                 // store reference to closest object as current intersection object
+                // store color of closest object (for later restoration)
+                // set a new color for closest object
                 INTERSECTED = intersects[0].object
                 INTERSECTED.canClick = true
-
-                // store color of closest object (for later restoration)
-                INTERSECTED.currentHex = INTERSECTED.material.color.getHex()
-                // set a new color for closest object
-                INTERSECTED.material.color.setHex(0xffff00)
+                INTERSECTED.material.emissiveIntensity = 0.2
             }
         } else {
             // restore previous intersection object (if it exists) to its original color
             if (INTERSECTED) {
-                INTERSECTED.material.color.setHex(INTERSECTED.currentHex)
                 INTERSECTED.canClick = false
+                INTERSECTED.material.color.set(INTERSECTED.currentHex)
+                INTERSECTED.material.emissiveIntensity = 0
                 this.renderer.domElement.style.cursor = "auto"
             }
 
@@ -543,11 +544,13 @@ export default class App {
         this.pushers.forEach(pusher => {
             if (pusher.canClick) {
                 if (pusher.position.z === 0) {
-                    pusher.position.z += 0.07
-                    pusher.onStop()
-                } else {
-                    pusher.position.z -= 0.07
+                    pusher.position.z -= 0.05
+                    pusher.material.color.setHex(0x00ff00)
                     pusher.onStart()
+                } else {
+                    pusher.position.z += 0.05
+                    pusher.material.color.setHex(0xff1212)
+                    pusher.onStop()
                 }
             }
         })

@@ -25,7 +25,7 @@ export const snow = {
 }
 
 export const tornado = {
-    size: 0.85,
+    size: 0.8,
     angle: Math.PI / 8,
     rotationRadius: 0.25,
     rotationSpeed: -0.9
