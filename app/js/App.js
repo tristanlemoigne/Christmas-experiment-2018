@@ -79,6 +79,7 @@ export default class App {
             this.loadMusic("/app/assets/musics/song.mp3", "song"),
             this.loadTexture("/app/assets/textures/spirale.jpg", "spirale"),
             this.loadTexture("/app/assets/textures/fire.png", "fireTexture"),
+            this.loadTexture("/app/assets/textures/bump.jpg", "bumpMap"),
             this.loadTexture(
                 "/app/assets/textures/fire-rgb.jpg",
                 "fireSpritesheet"
@@ -321,9 +322,10 @@ export default class App {
 
         // MESHES
         // Sphere
+        console.log(this.modelsArr.model)
         this.sphere = new THREE.Group()
         let sphereElements = this.modelsArr.model.children.slice(
-            Math.max(this.modelsArr.model.children.length - 3, 1)
+            Math.max(this.modelsArr.model.children.length - 4, 1)
         )
 
         sphereElements.forEach(element => {
@@ -336,12 +338,13 @@ export default class App {
                     child.material = new THREE.MeshStandardMaterial({
                         transparent: true,
                         opacity: 0.4,
-                        metalness: 1,
+                        metalness: 0.8,
                         roughness: 0,
                         emissive: 0xffffff,
                         emissiveIntensity: 0.3,
                         envMap: cubeCamera.renderTarget.texture,
-                        depthWrite: false
+                        depthWrite: false,
+                        bumpMap: this.texturesArr.bumpMap
                     })
                 }
 
@@ -349,17 +352,16 @@ export default class App {
                     child.material.map = this.texturesArr.spirale
                 }
 
-                if (child.name === "Armature") {
+                if (child.name === "Armature" || child.name === "Capuchon") {
                     child.material = new THREE.MeshPhongMaterial({
-                        // color: 0xff0000,
-                        color: 0xffffff,
+                        color: 0xb38e41,
                         envMap: cubeCamera.renderTarget.texture,
                         combine: THREE.MixOperation,
-                        reflectivity: 0.3,
-                        specular: 0xffffff,
-                        shininess: 100,
+                        reflectivity: 0,
+                        specular: 0xeee8aa,
+                        shininess: 40,
                         emissive: 0xffffff,
-                        emissiveIntensity: 0.2
+                        emissiveIntensity: 0.06
                     })
                 }
             }
