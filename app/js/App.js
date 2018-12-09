@@ -50,7 +50,7 @@ export default class App {
         this.renderer.setPixelRatio(window.devicePixelRatio)
         this.renderer.setSize(window.innerWidth, window.innerHeight)
         this.renderer.shadowMap.enabled = true
-        this.renderer.shadowMap.type = THREE.PCFSoftShadowMap
+        this.renderer.shadowMap.type = THREE.PCFShadowMap
 
         // Controls
         this.controls = new THREE.OrbitControls(
@@ -302,10 +302,11 @@ export default class App {
         this.scene.add(ambientLight)
 
         let pointLight = new THREE.PointLight(0xffffff, 1, 90)
-        pointLight.position.set(30, 18, 30)
+        pointLight.position.set(15, 30, 30)
         pointLight.castShadow = true
         pointLight.shadow.mapSize.width = 2048
         pointLight.shadow.mapSize.height = 2048
+        pointLight.shadow.radius = 3
         this.scene.add(pointLight)
 
         let pointLight2 = new THREE.PointLight(0xffffff, 1, 25)
@@ -419,6 +420,8 @@ export default class App {
 
         // Snow
         const snow = new Snow(this.texturesArr.snowNormals)
+
+        snow.receiveShadow = true
         snow.rotation.x = Math.PI / 2
         this.scene.add(snow)
 
