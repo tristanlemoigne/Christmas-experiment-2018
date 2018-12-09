@@ -303,9 +303,12 @@ export default class App {
         let ambientLight = new THREE.AmbientLight(0xffffff, 0.5)
         this.scene.add(ambientLight)
 
-        let pointLight = new THREE.PointLight(0xffffff, 1, 30)
-        pointLight.position.set(10, 10, 10)
+        let pointLight = new THREE.PointLight(0xffffff, 1, 90)
+        pointLight.position.set(30, 18, 30)
         pointLight.castShadow = true
+
+        pointLight.shadow.mapSize.width = 2048 // You have there 4K no need to go over 2K
+        pointLight.shadow.mapSize.height = 2048 //
         this.scene.add(pointLight)
 
         let pointLight2 = new THREE.PointLight(0xffffff, 1, 25)
