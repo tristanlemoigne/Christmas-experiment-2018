@@ -10,6 +10,8 @@ import Fire from "./Fire"
 import Tornado from "./Tornado"
 import VolumetricFire from "./VolumetricFire"
 
+let INTERSECTED
+
 export default class App {
     constructor() {
         // Scene
@@ -297,6 +299,30 @@ export default class App {
                 }
             }
         })
+
+        // Param pusher buttons
+        this.pushers = [
+            this.socle.children[3],
+            this.socle.children[6],
+            this.socle.children[9]
+        ]
+
+        this.pushers[0].onClick = function() {
+            console.log("Im TORNADOS")
+        }
+
+        this.pushers[1].onClick = function() {
+            console.log("Im FIRE")
+        }
+
+        this.pushers[2].onClick = function() {
+            console.log("Im LEVITATE")
+        }
+
+        this.pushers.forEach(pusher => {
+            pusher.canClick = false
+        })
+
         this.scene.add(this.socle)
 
         // Snow
@@ -370,24 +396,36 @@ export default class App {
 
         // Socle interactions
         this.raycaster.setFromCamera(this.mouse, this.cameraTest)
-        let intersects = this.raycaster.intersectObjects(this.socle.children)
+        let intersects = this.raycaster.intersectObjects(this.pushers)
 
         // for (var i = 0; i < intersects.length; i++) {
         if (intersects.length > 0) {
-            if (
-                intersects[0].object.name === "Fire_pusher" ||
-                intersects[0].object.name === "Levitate_pusher" ||
-                intersects[0].object.name === "Flakes_pusher"
-            ) {
+            if (intersects[0].object != INTERSECTED) {
                 this.renderer.domElement.style.cursor = "pointer"
-                intersects[0].object.material.color.set(0xff0000)
-                this.canClick = true
-            } else {
-                this.canClick = false
+                // restore previous intersection object (if it exists) to its original color
+                if (INTERSECTED) {
+                    INTERSECTED.material.color.setHex(INTERSECTED.currentHex)
+                }
 
-                this.renderer.domElement.style.cursor = "auto"
-                intersects[0].object.material.color.set(0xffffff)
+                // store reference to closest object as current intersection object
+                INTERSECTED = intersects[0].object
+                INTERSECTED.canClick = true
+
+                // store color of closest object (for later restoration)
+                INTERSECTED.currentHex = INTERSECTED.material.color.getHex()
+                // set a new color for closest object
+                INTERSECTED.material.color.setHex(0xffff00)
             }
+        } else {
+            // restore previous intersection object (if it exists) to its original color
+            if (INTERSECTED) {
+                INTERSECTED.material.color.setHex(INTERSECTED.currentHex)
+                INTERSECTED.canClick = false
+                this.renderer.domElement.style.cursor = "auto"
+            }
+
+            // remove previous intersection object reference by setting current intersection object to "nothing"
+            INTERSECTED = null
         }
 
         // Render scene
@@ -396,9 +434,16 @@ export default class App {
     }
 
     onMouseClick() {
-        if (this.canClick) {
-            console.log("START FUNCTION")
-        }
+        this.pushers.forEach(pusher => {
+            if (pusher.canClick) {
+                if (pusher.position.z === 0) {
+                    pusher.position.z -= 0.07
+                    pusher.onClick()
+                } else {
+                    pusher.position.z += 0.07
+                }
+            }
+        })
     }
 
     onMouseMove(event) {
