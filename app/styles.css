@@ -56,6 +56,10 @@ body {
     transform: translate(-50%, -50%);
 }
 
+.explications p {
+    margin: 0;
+}
+
 .explications i {
     font-size: 16px;
 }
@@ -83,12 +87,12 @@ body {
     color: #fff;
     font-size: 30px;
     display: inline-block;
-    margin-top: 50px;
+    margin-top: 100px;
     border: solid 2px #fff;
     border-radius: 50px;
     cursor: pointer;
     outline: none;
-    padding: 5px 30px;
+    padding: 8px 30px;
     transition: all 0.25s ease;
     font-family: "Christmas", "Arial", sans-serif;
 }

@@ -336,10 +336,10 @@ export default class App {
                     child.material = new THREE.MeshStandardMaterial({
                         transparent: true,
                         opacity: 0.4,
-                        metalness: 0.4,
+                        metalness: 1,
                         roughness: 0,
                         emissive: 0xffffff,
-                        emissiveIntensity: 0.4,
+                        emissiveIntensity: 0.3,
                         envMap: cubeCamera.renderTarget.texture,
                         depthWrite: false
                     })
@@ -351,14 +351,15 @@ export default class App {
 
                 if (child.name === "Armature") {
                     child.material = new THREE.MeshPhongMaterial({
-                        color: 0xff0000,
+                        // color: 0xff0000,
+                        color: 0xffffff,
                         envMap: cubeCamera.renderTarget.texture,
                         combine: THREE.MixOperation,
                         reflectivity: 0.3,
-                        specular: 0x111111,
+                        specular: 0xffffff,
                         shininess: 100,
-                        emissive: 0x000000,
-                        emissiveIntensity: 1
+                        emissive: 0xffffff,
+                        emissiveIntensity: 0.2
                     })
                 }
             }
@@ -465,6 +466,7 @@ export default class App {
             this.levitationClock.getDelta()
             this.levitationCurrentTime =
                 this.levitationClock.elapsedTime - this.levitationStartTime
+            this.sphere.rotation.y += 0.005
 
             if (
                 this.sphere.position.y < this.sphere.maxPosition &&
