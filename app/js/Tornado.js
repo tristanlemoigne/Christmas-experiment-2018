@@ -19,7 +19,6 @@ export default class Tornado extends THREE.Group {
                 this.flakesTextures,
                 this.flakeRotationSpeed
             )
-
             this.add(flake)
             this._nextTime += flakes.creationSpeed
         }

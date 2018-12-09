@@ -66,7 +66,7 @@ export default class App {
         this.modelsArr = []
         this.texturesArr = []
         this.flamesArr = []
-        this.tornadoArr = []
+        this.tornadosArr = []
 
         // Load all scene elements
         this.loadElements()
@@ -172,7 +172,7 @@ export default class App {
             )
 
             tornado.position.y = 1.45
-            this.tornadoArr.push(tornado)
+            this.tornadosArr.push(tornado)
         }
     }
 
@@ -195,6 +195,50 @@ export default class App {
 
             this.flamesArr.push(fire)
         }
+    }
+
+    startTornados() {
+        this.tornadosStartTime = this.tornadosClock.getElapsedTime()
+
+        this.generateTornados()
+        this.tornadosArr.forEach(tornado => {
+            this.sphere.add(tornado)
+        })
+    }
+
+    stopTornados() {
+        this.tornadosArr.forEach(tornado => {
+            this.sphere.remove(tornado)
+        })
+        this.tornadosArr = []
+    }
+
+    startFire() {
+        this.generateFlames()
+        this.flamesArr.forEach(flame => {
+            this.sphere.add(flame)
+        })
+
+        this.volumetricFire = new VolumetricFire(this.texturesArr.fireTexture)
+        this.volumetricFire.position.y = 2.65
+        this.volumetricFire.scale.set(0.7, 0.7, 0.7)
+        this.sphere.add(this.volumetricFire)
+    }
+
+    stopFire() {
+        this.flamesArr.forEach(flame => {
+            this.sphere.remove(flame)
+        })
+        this.flamesArr = []
+        this.sphere.remove(this.volumetricFire)
+    }
+
+    startLevitation() {
+        this.levitation = true
+    }
+
+    stopLevitation() {
+        this.levitation = false
     }
 
     launchScene() {
@@ -230,6 +274,7 @@ export default class App {
 
         // Timer
         this.clock = new THREE.Clock()
+        this.tornadosClock = new THREE.Clock()
         this.currentTime = 0
 
         // Cube camera
@@ -307,17 +352,12 @@ export default class App {
             this.socle.children[9]
         ]
 
-        this.pushers[0].onClick = function() {
-            console.log("Im TORNADOS")
-        }
-
-        this.pushers[1].onClick = function() {
-            console.log("Im FIRE")
-        }
-
-        this.pushers[2].onClick = function() {
-            console.log("Im LEVITATE")
-        }
+        this.pushers[0].onStart = this.startTornados.bind(this)
+        this.pushers[0].onStop = this.stopTornados.bind(this)
+        this.pushers[1].onStart = this.startFire.bind(this)
+        this.pushers[1].onStop = this.stopFire.bind(this)
+        this.pushers[2].onStart = this.startLevitation.bind(this)
+        this.pushers[2].onStop = this.stopLevitation.bind(this)
 
         this.pushers.forEach(pusher => {
             pusher.canClick = false
@@ -331,22 +371,9 @@ export default class App {
         this.scene.add(snow)
 
         // Flames
-        this.generateFlames()
-        this.flamesArr.forEach(flame => {
-            this.sphere.add(flame)
-        })
-
-        // Volumetric fire
-        this.volumetricFire = new VolumetricFire(this.texturesArr.fireTexture)
-        this.volumetricFire.position.y = 2.65
-        this.volumetricFire.scale.set(0.7, 0.7, 0.7)
-        this.sphere.add(this.volumetricFire)
-
-        // Tornados
-        this.generateTornados()
-        this.tornadoArr.forEach(tornado => {
-            this.sphere.add(tornado)
-        })
+        this.startFire()
+        this.startTornados()
+        this.startLevitation()
 
         // GUI
         // const gui = new dat.GUI()
@@ -381,18 +408,29 @@ export default class App {
         this.currentTime = this.clock.elapsedTime
 
         // Update all elements
-        this.volumetricFire.animate(this.currentTime)
-        this.flamesArr.forEach(flame => {
-            flame.update(this.currentTime, deltaTime)
-        })
+        if (this.flamesArr.length > 0) {
+            this.volumetricFire.animate(this.currentTime)
 
-        this.tornadoArr.forEach(tornado => {
-            tornado.update(this.currentTime)
-        })
+            this.flamesArr.forEach(flame => {
+                flame.update(this.currentTime, deltaTime)
+            })
+        }
+
+        if (this.tornadosArr.length > 0) {
+            let tornadosDelta = this.tornadosClock.getDelta()
+            this.tornadosCurrentTime =
+                this.tornadosClock.elapsedTime - this.tornadosStartTime
+
+            this.tornadosArr.forEach(tornado => {
+                tornado.update(this.tornadosCurrentTime)
+            })
+        }
 
         // Sphere levitation
-        // this.sphere.rotation.y = -this.currentTime / 2
-        // this.sphere.position.y = (Math.sin(this.currentTime) + 1) / 2
+        if (this.levitation) {
+            this.sphere.rotation.y = -this.currentTime / 2
+            this.sphere.position.y = (Math.sin(this.currentTime) + 1) / 2
+        }
 
         // Socle interactions
         this.raycaster.setFromCamera(this.mouse, this.cameraTest)
@@ -437,10 +475,11 @@ export default class App {
         this.pushers.forEach(pusher => {
             if (pusher.canClick) {
                 if (pusher.position.z === 0) {
-                    pusher.position.z -= 0.07
-                    pusher.onClick()
-                } else {
                     pusher.position.z += 0.07
+                    pusher.onStop()
+                } else {
+                    pusher.position.z -= 0.07
+                    pusher.onStart()
                 }
             }
         })
