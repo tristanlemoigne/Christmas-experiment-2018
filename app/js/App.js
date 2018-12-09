@@ -47,7 +47,6 @@ export default class App {
         })
         this.renderer.setPixelRatio(window.devicePixelRatio)
         this.renderer.setSize(window.innerWidth, window.innerHeight)
-        // this.renderer.sortObjects = false
 
         // Controls
         this.controls = new THREE.OrbitControls(
@@ -55,6 +54,11 @@ export default class App {
             document.querySelector("canvas")
         )
         this.controls.target = new THREE.Vector3(0, 2, 0)
+
+        // Raycaster
+        this.raycaster = new THREE.Raycaster()
+        this.mouse = new THREE.Vector2()
+        this.canClick = false
 
         // Scene variables
         this.modelsArr = []
@@ -230,19 +234,20 @@ export default class App {
         let cubeCamera = new THREE.CubeCamera(1, 1000, 256)
         cubeCamera.renderTarget.texture.minFilter =
             THREE.LinearMipMapLinearFilter
+        cubeCamera.update(this.renderer, this.scene)
 
         // MESHES
         // Sphere
-        let sphere = new THREE.Group()
+        this.sphere = new THREE.Group()
         let sphereElements = this.modelsArr.model.children.slice(
             Math.max(this.modelsArr.model.children.length - 3, 1)
         )
 
         sphereElements.forEach(element => {
-            sphere.add(element)
+            this.sphere.add(element)
         })
 
-        sphere.traverse(child => {
+        this.sphere.traverse(child => {
             if (child instanceof THREE.Mesh) {
                 if (child.name === "Sphere") {
                     child.material = new THREE.MeshStandardMaterial({
@@ -255,16 +260,9 @@ export default class App {
                         envMap: cubeCamera.renderTarget.texture,
                         depthWrite: false
                     })
-
-                    cubeCamera.update(this.renderer, this.scene)
                 }
 
                 if (child.name === "Palissade") {
-                    console.log(child)
-                    // child.material = new THREE.MeshBasicMaterial({
-                    //     map: this.texturesArr.spirale
-                    // })
-
                     child.material.map = this.texturesArr.spirale
                 }
 
@@ -283,21 +281,23 @@ export default class App {
             }
         })
 
-        sphere.position.y = 2
-        this.scene.add(sphere)
+        this.sphere.position.y = 2
+        this.scene.add(this.sphere)
 
         // Socle
-        // this.modelsArr.model.traverse(child => {
-        //     if (child instanceof THREE.Mesh) {
-
-        //         if (child.name === "Palissade") {
-        //             console.log(child)
-        //             // child.geometry.verticesNeedUpdate = true
-        //         }
-        //     }
-        // })
-
-        this.scene.add(this.modelsArr.model)
+        this.socle = this.modelsArr.model
+        this.socle.traverse(child => {
+            if (child instanceof THREE.Mesh) {
+                if (child.name === "Socle") {
+                    child.material = new THREE.MeshStandardMaterial({
+                        color: 0x5b5855,
+                        roughness: 0.6,
+                        metalness: 0.3
+                    })
+                }
+            }
+        })
+        this.scene.add(this.socle)
 
         // Snow
         const snow = new Snow(this.texturesArr.snowNormals)
@@ -307,19 +307,19 @@ export default class App {
         // Flames
         this.generateFlames()
         this.flamesArr.forEach(flame => {
-            sphere.add(flame)
+            this.sphere.add(flame)
         })
 
         // Volumetric fire
         this.volumetricFire = new VolumetricFire(this.texturesArr.fireTexture)
         this.volumetricFire.position.y = 2.65
         this.volumetricFire.scale.set(0.7, 0.7, 0.7)
-        sphere.add(this.volumetricFire)
+        this.sphere.add(this.volumetricFire)
 
         // Tornados
         this.generateTornados()
         this.tornadoArr.forEach(tornado => {
-            sphere.add(tornado)
+            this.sphere.add(tornado)
         })
 
         // GUI
@@ -340,6 +340,8 @@ export default class App {
         // guiFlakes.open()
 
         // Listeners
+        window.addEventListener("mousemove", this.onMouseMove.bind(this), false)
+        window.addEventListener("click", this.onMouseClick.bind(this), false)
         window.addEventListener("resize", this.onWindowResize.bind(this), false)
         this.onWindowResize()
 
@@ -362,9 +364,46 @@ export default class App {
             tornado.update(this.currentTime)
         })
 
+        // Sphere levitation
+        // this.sphere.rotation.y = -this.currentTime / 2
+        // this.sphere.position.y = (Math.sin(this.currentTime) + 1) / 2
+
+        // Socle interactions
+        this.raycaster.setFromCamera(this.mouse, this.cameraTest)
+        let intersects = this.raycaster.intersectObjects(this.socle.children)
+
+        // for (var i = 0; i < intersects.length; i++) {
+        if (intersects.length > 0) {
+            if (
+                intersects[0].object.name === "Fire_pusher" ||
+                intersects[0].object.name === "Levitate_pusher" ||
+                intersects[0].object.name === "Flakes_pusher"
+            ) {
+                this.renderer.domElement.style.cursor = "pointer"
+                intersects[0].object.material.color.set(0xff0000)
+                this.canClick = true
+            } else {
+                this.canClick = false
+
+                this.renderer.domElement.style.cursor = "auto"
+                intersects[0].object.material.color.set(0xffffff)
+            }
+        }
+
         // Render scene
         this.renderer.render(this.scene, this.cameraTest)
         requestAnimationFrame(this.update.bind(this))
+    }
+
+    onMouseClick() {
+        if (this.canClick) {
+            console.log("START FUNCTION")
+        }
+    }
+
+    onMouseMove(event) {
+        this.mouse.x = (event.clientX / window.innerWidth) * 2 - 1
+        this.mouse.y = -(event.clientY / window.innerHeight) * 2 + 1
     }
 
     onWindowResize() {
