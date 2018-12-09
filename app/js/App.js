@@ -67,6 +67,7 @@ export default class App {
         this.texturesArr = []
         this.flamesArr = []
         this.tornadosArr = []
+        this.musicsArr = []
 
         // Load all scene elements
         this.loadElements()
@@ -75,6 +76,7 @@ export default class App {
     loadElements() {
         Promise.all([
             this.loadModel("/app/assets/models/model.obj", "model"),
+            this.loadMusic("/app/assets/musics/song.mp3", "song"),
             this.loadTexture("/app/assets/textures/spirale.jpg", "spirale"),
             this.loadTexture("/app/assets/textures/fire.png", "fireTexture"),
             this.loadTexture(
@@ -135,6 +137,23 @@ export default class App {
         return new Promise((resolve, reject) => {
             new THREE.TextureLoader().load(path, texture => {
                 this.texturesArr[id] = texture
+                resolve()
+            })
+        })
+    }
+
+    loadMusic(path, id) {
+        return new Promise((resolve, reject) => {
+            var listener = new THREE.AudioListener()
+            this.camera.add(listener)
+
+            // create a global audio source
+            var sound = new THREE.Audio(listener)
+
+            new THREE.AudioLoader().load(path, buffer => {
+                sound.setBuffer(buffer)
+                sound.setLoop(true)
+                this.musicsArr[id] = sound
                 resolve()
             })
         })
@@ -234,11 +253,18 @@ export default class App {
     }
 
     startLevitation() {
+        this.levitationStartTime = this.levitationClock.getElapsedTime()
+
         this.levitation = true
+        this.sphere.maxPosition = 0.8
+        this.canLevitate = false
+        this.musicsArr.song.play()
     }
 
     stopLevitation() {
         this.levitation = false
+        this.sphere.minPosition = 0
+        this.musicsArr.song.stop()
     }
 
     launchScene() {
@@ -275,6 +301,7 @@ export default class App {
         // Timer
         this.clock = new THREE.Clock()
         this.tornadosClock = new THREE.Clock()
+        this.levitationClock = new THREE.Clock()
         this.currentTime = 0
 
         // Cube camera
@@ -327,8 +354,6 @@ export default class App {
                 }
             }
         })
-
-        this.sphere.position.y = 2
         this.scene.add(this.sphere)
 
         // Socle
@@ -417,7 +442,7 @@ export default class App {
         }
 
         if (this.tornadosArr.length > 0) {
-            let tornadosDelta = this.tornadosClock.getDelta()
+            this.tornadosClock.getDelta()
             this.tornadosCurrentTime =
                 this.tornadosClock.elapsedTime - this.tornadosStartTime
 
@@ -428,8 +453,24 @@ export default class App {
 
         // Sphere levitation
         if (this.levitation) {
-            this.sphere.rotation.y = -this.currentTime / 2
-            this.sphere.position.y = (Math.sin(this.currentTime) + 1) / 2
+            this.levitationClock.getDelta()
+            this.levitationCurrentTime =
+                this.levitationClock.elapsedTime - this.levitationStartTime
+
+            if (
+                this.sphere.position.y < this.sphere.maxPosition &&
+                !this.canLevitate
+            ) {
+                this.sphere.position.y += 0.005
+            } else {
+                this.canLevitate = true
+                this.sphere.position.y +=
+                    Math.sin(this.levitationCurrentTime) * 0.005
+            }
+        } else {
+            if (this.sphere.position.y > this.sphere.minPosition) {
+                this.sphere.position.y -= 0.005
+            }
         }
 
         // Socle interactions
