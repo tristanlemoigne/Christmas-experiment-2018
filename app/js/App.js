@@ -49,6 +49,8 @@ export default class App {
         })
         this.renderer.setPixelRatio(window.devicePixelRatio)
         this.renderer.setSize(window.innerWidth, window.innerHeight)
+        this.renderer.shadowMap.enabled = true
+        this.renderer.shadowMap.type = THREE.PCFSoftShadowMap
 
         // Controls
         this.controls = new THREE.OrbitControls(
@@ -301,9 +303,14 @@ export default class App {
         let ambientLight = new THREE.AmbientLight(0xffffff, 0.5)
         this.scene.add(ambientLight)
 
-        let pointLight = new THREE.PointLight(0xffffff, 1, 50)
-        pointLight.position.set(0, 20, 0)
+        let pointLight = new THREE.PointLight(0xffffff, 1, 30)
+        pointLight.position.set(10, 10, 10)
+        pointLight.castShadow = true
         this.scene.add(pointLight)
+
+        let pointLight2 = new THREE.PointLight(0xffffff, 1, 25)
+        pointLight2.position.set(0, 20, 0)
+        this.scene.add(pointLight2)
 
         let pointLightHelper = new THREE.PointLightHelper(pointLight, 1)
         this.scene.add(pointLightHelper)
@@ -346,6 +353,9 @@ export default class App {
                         depthWrite: false,
                         bumpMap: this.texturesArr.bumpMap
                     })
+
+                    child.castShadow = true
+                    // child.receiveShadow = true
                 }
 
                 if (child.name === "Palissade") {
@@ -378,6 +388,7 @@ export default class App {
                         roughness: 0.6,
                         metalness: 0.3
                     })
+                    child.receiveShadow = true
                 }
             }
         })
