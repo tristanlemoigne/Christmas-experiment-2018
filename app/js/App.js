@@ -120,7 +120,13 @@ export default class App {
                 "snowNormals"
             )
         ]).then(() => {
-            this.launchScene()
+            console.log("Assets chargées")
+
+            const loader = document.querySelector(".loader")
+            loader.style.display = "none"
+
+            const startButton = document.querySelector(".startButton")
+            startButton.addEventListener("click", this.launchScene.bind(this))
         })
     }
 
@@ -268,7 +274,10 @@ export default class App {
     }
 
     launchScene() {
-        console.log("Assets chargées")
+        console.log("launch scene")
+        const explications = document.querySelector(".explications")
+        explications.style.display = "none"
+
         // Adding scene background
         let sphereBackground = new THREE.Mesh(
             new THREE.SphereBufferGeometry(20, 32, 32),
