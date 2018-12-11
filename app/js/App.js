@@ -63,6 +63,7 @@ export default class App {
             document.querySelector("canvas")
         )
         this.controls.target = this.cameraLookAt
+        this.controls.enableDamping = true
         // Scroll limit
         this.controls.minDistance = 3
         this.controls.maxDistance = 10
@@ -70,7 +71,6 @@ export default class App {
         // Rotation limit
         this.controls.minPolarAngle = 0
         this.controls.maxPolarAngle = Math.PI / 2
-
         this.controls.enablePan = false
 
         // Scene variables
@@ -79,6 +79,9 @@ export default class App {
         this.flamesArr = []
         this.tornadosArr = []
         this.musicsArr = []
+
+        // Song
+        this.volume = 0
 
         // Load all scene elements
         this.loadElements()
@@ -153,16 +156,15 @@ export default class App {
 
     loadMusic(path, id) {
         return new Promise((resolve, reject) => {
-            var listener = new THREE.AudioListener()
+            let listener = new THREE.AudioListener()
             this.camera.add(listener)
 
             // create a global audio source
-            var sound = new THREE.Audio(listener)
+            this.sound = new THREE.Audio(listener)
 
             new THREE.AudioLoader().load(path, buffer => {
-                sound.setBuffer(buffer)
-                sound.setLoop(true)
-                this.musicsArr[id] = sound
+                this.sound.setBuffer(buffer)
+                this.musicsArr[id] = this.sound
                 resolve()
             })
         })
@@ -271,12 +273,10 @@ export default class App {
     startLevitation() {
         this.levitationStartTime = this.levitationClock.getElapsedTime()
         this.canLevitate = true
-        this.musicsArr.song.play()
     }
 
     stopLevitation() {
         this.canLevitate = false
-        this.musicsArr.song.stop()
     }
 
     launchScene() {
@@ -345,6 +345,11 @@ export default class App {
         let pointLight2 = new THREE.PointLight(0xffffff, 1, 25)
         pointLight2.position.set(0, 20, 0)
         this.scene.add(pointLight2)
+
+        // Start song 
+        this.musicsArr.song.setLoop(true)
+        this.musicsArr.song.setVolume(this.volume)
+        this.musicsArr.song.play()
 
         // Sphere
         const sphereChildren = this.modelsArr.model.children.slice(
@@ -426,6 +431,15 @@ export default class App {
             this.tornadosArr.forEach(tornado => {
                 tornado.update(this.tornadosCurrentTime)
             })
+        }
+
+        // Song
+        if(this.canLevitate){
+            this.volume += (1 - this.musicsArr.song.getVolume()) * 0.02
+            this.musicsArr.song.setVolume(this.volume)
+        } else {
+            this.volume += (-this.musicsArr.song.getVolume()) * 0.02
+            this.musicsArr.song.setVolume(this.volume)
         }
 
         // Sphere
