@@ -24,14 +24,11 @@ export default class App {
             1,
             200
         )
-        // this.camera.position.set(-2, 4, 6)
-        this.camera.position.set(0, 10, 20)
-        this.camera.lookAt(0, 2, 0)
+        // ARRIVE
+        this.camera.position.set(-4.5, 2, 30)
+        this.cameraLookAt = new THREE.Vector3(0, 2.5, 0)
+        this.camera.lookAt(this.cameraLookAt)
         this.scene.add(this.camera)
-
-        // Original camera helpers
-        var helper = new THREE.CameraHelper(this.camera)
-        this.scene.add(helper)
 
         // Camera test
         this.cameraTest = new THREE.PerspectiveCamera(
@@ -65,7 +62,16 @@ export default class App {
             this.camera,
             document.querySelector("canvas")
         )
-        this.controls.target = new THREE.Vector3(0, 2, 0)
+        this.controls.target = this.cameraLookAt
+        // Scroll limit
+        this.controls.minDistance = 3
+        this.controls.maxDistance = 10
+
+        // Rotation limit
+        this.controls.minPolarAngle = 0
+        this.controls.maxPolarAngle = Math.PI / 2
+
+        this.controls.enablePan = false
 
         // Scene variables
         this.modelsArr = []
@@ -342,8 +348,7 @@ export default class App {
 
         // Fog
         let fogColor = new THREE.Color(0x00003d)
-        // this.scene.fog = new THREE.Fog(fogColor, 0, 40)
-        this.scene.fog = new THREE.Fog(fogColor, 0, 10)
+        this.scene.fog = new THREE.Fog(fogColor, 0, 5)
 
         // Lights
         let ambientLight = new THREE.AmbientLight(0xffffff, 0.5)
@@ -413,32 +418,25 @@ export default class App {
     }
 
     update() {
+        // Orbit controls
+        this.controls.update()
+
         // Get current time
         let deltaTime = this.clock.getDelta()
         this.currentTime = this.clock.elapsedTime
 
-        // this.scene.fog = new THREE.Fog(fogColor, 0, 40)
-        if (this.scene.fog.far < 40) {
-            this.scene.fog.far += 0.3
+        // Camera traveling at start
+        if (this.camera.position.z > 4.5) {
+            this.camera.position.z -= 0.03
         }
 
+        // Smooth fog at start
+        if (this.scene.fog.far < 40) {
+            this.scene.fog.far += 0.2
+        }
+
+        // Update stars
         this.backgroundStars.rotation.y += 0.003
-
-        // Camera traveling
-        // this.camera.position.set(0, 10, 20)  DEPART
-        // this.camera.position.set(-2, 4, 6)  ARRIVE
-
-        // if (this.camera.position.z > 6) {
-        //     this.camera.position.z -= 0.1
-        // }
-
-        // if (this.camera.position.y > 2) {
-        //     this.camera.position.y -= 0.1
-        // }
-
-        // if (this.camera.position.x > -2) {
-        //     this.camera.position.x -= 0.1
-        // }
 
         // Flames
         if (this.flamesArr.length > 0) {

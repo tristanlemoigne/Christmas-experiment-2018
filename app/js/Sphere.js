@@ -24,11 +24,11 @@ export default class Sphere extends THREE.Group {
 
         const sphereMaterial = new THREE.MeshStandardMaterial({
             transparent: true,
-            opacity: 0.4,
+            opacity: 0.3,
             metalness: 0.8,
             roughness: 0,
             emissive: 0xffffff,
-            emissiveIntensity: 0.3,
+            emissiveIntensity: 0.2,
             envMap: this.envMap,
             depthWrite: false
         })

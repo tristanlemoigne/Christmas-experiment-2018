@@ -21,11 +21,26 @@ export default class Socle extends THREE.Group {
             metalness: 0.3
         })
 
+        const goldMaterial = new THREE.MeshPhongMaterial({
+            color: 0xb38e41,
+            reflectivity: 0,
+            specular: 0xeee8aa,
+            shininess: 40,
+            emissive: 0xffffff,
+            emissiveIntensity: 0.06
+        })
+
         // Adding each element to the sphere
         this.children.forEach(child => {
             if (child.name === "Socle") {
                 child.material = socleMaterial
                 child.receiveShadow = true
+            } else if (
+                child.name === "Fire" ||
+                child.name === "Levitate" ||
+                child.name === "Flakes"
+            ) {
+                child.material = goldMaterial
             } else if (
                 child.name === "Fire_pusher" ||
                 child.name === "Levitate_pusher" ||
