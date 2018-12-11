@@ -1,8 +1,6 @@
 // Libs
 import "../utils/OrbitControls"
 import "../utils/OBJLoader"
-import * as Constants from "../utils/constants"
-import * as dat from "../utils/DatGui"
 
 // Classes
 import Snow from "./Snow"
@@ -11,6 +9,7 @@ import Tornado from "./Tornado"
 import VolumetricFire from "./VolumetricFire"
 import Sphere from "./Sphere"
 import Socle from "./Socle"
+import SnowWind from "./SnowWind"
 
 export default class App {
     constructor() {
@@ -25,9 +24,10 @@ export default class App {
             200
         )
         // ARRIVE
-        this.camera.position.set(-4.5, 2, 30)
-        this.cameraLookAt = new THREE.Vector3(0, 2.5, 0)
+        this.camera.position.set(-6, 2, 30)
+        this.cameraLookAt = new THREE.Vector3(0, 3, 0)
         this.camera.lookAt(this.cameraLookAt)
+        this.camera.canTravelling = true
         this.scene.add(this.camera)
 
         // Camera test
@@ -86,7 +86,7 @@ export default class App {
 
     loadElements() {
         Promise.all([
-            this.loadModel("/app/assets/models/model2.obj", "model"),
+            this.loadModel("/app/assets/models/model.obj", "model"),
             this.loadMusic("/app/assets/musics/song.mp3", "song"),
             this.loadTexture("/app/assets/textures/spirale.jpg", "spirale"),
             this.loadTexture("/app/assets/textures/fire.png", "fireTexture"),
@@ -122,6 +122,14 @@ export default class App {
             this.loadTexture(
                 "/app/assets/textures/flake-6.png",
                 "flake6Texture"
+            ),
+            this.loadTexture(
+                "/app/assets/textures/flake-6.png",
+                "flake6Texture"
+            ),
+            this.loadTexture(
+                "/app/assets/textures/snowParticle.png",
+                "snowParticle"
             ),
             this.loadTexture(
                 "/app/assets/textures/background-sky.jpg",
@@ -390,22 +398,8 @@ export default class App {
         // Snow
         this.generateSnow()
 
-        // GUI
-        // const gui = new dat.GUI()
-
-        // let guiTornado = gui.addFolder("Tornado")
-        // guiTornado.add(Constants.tornado, "size", 0, 2)
-        // guiTornado.add(Constants.tornado, "angle", 0, 2 * Math.PI)
-        // guiTornado.add(Constants.tornado, "rotationRadius", 0, 0.8)
-        // guiTornado.add(Constants.tornado, "rotationSpeed", -10, 10)
-        // guiTornado.open()
-
-        // let guiFlakes = gui.addFolder("Flakes")
-        // guiFlakes.add(Constants.flakes, "size", 0, 0.3)
-        // guiFlakes.add(Constants.flakes, "rotationSpeed", -1, 1)
-        // guiFlakes.add(Constants.flakes, "verticalSpeed", 0, 0.003)
-        // guiFlakes.add(Constants.flakes, "creationSpeed", 0, 0.5)
-        // guiFlakes.open()
+        // Snow wind
+        this.snowWind = new SnowWind(this.texturesArr.snowParticle)
 
         // Listeners
         // window.addEventListener("mousemove", this.onMouseMove.bind(this), false)
@@ -426,8 +420,10 @@ export default class App {
         this.currentTime = this.clock.elapsedTime
 
         // Camera traveling at start
-        if (this.camera.position.z > 4.5) {
+        if (this.camera.position.z > 5.5 && this.camera.canTravelling) {
             this.camera.position.z -= 0.03
+        } else {
+            this.camera.canTravelling = false
         }
 
         // Smooth fog at start
@@ -436,7 +432,7 @@ export default class App {
         }
 
         // Update stars
-        this.backgroundStars.rotation.y += 0.003
+        this.backgroundStars.rotation.y += 0.0007
 
         // Flames
         if (this.flamesArr.length > 0) {
