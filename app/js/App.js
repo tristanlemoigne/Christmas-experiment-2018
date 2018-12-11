@@ -76,12 +76,15 @@ export default class App {
         // Scene variables
         this.modelsArr = []
         this.texturesArr = []
-        this.flamesArr = []
+        // this.flamesArr = []
         this.tornadosArr = []
         this.musicsArr = []
 
         // Song
         this.volume = 0
+        this.volumetricScale = 0.01
+        this.flakeOpacity = 0
+        this.removeTornado = true
 
         // Load all scene elements
         this.loadElements()
@@ -237,37 +240,41 @@ export default class App {
     startTornados() {
         this.tornadosStartTime = this.tornadosClock.getElapsedTime()
 
-        this.generateTornados()
-        this.tornadosArr.forEach(tornado => {
-            this.sphere.add(tornado)
-        })
+        // this.generateTornados()
+        this.removeTornado = false
+        // this.tornadosArr.forEach(tornado => {
+        //     this.sphere.add(tornado)
+        // })
     }
 
     stopTornados() {
-        this.tornadosArr.forEach(tornado => {
-            this.sphere.remove(tornado)
-        })
-        this.tornadosArr = []
+        this.removeTornado = true
+        // this.tornadosArr.forEach(tornado => {
+        //     this.sphere.remove(tornado)
+        // })
+        // this.tornadosArr = []
     }
 
     startFire() {
-        this.generateFlames()
-        this.flamesArr.forEach(flame => {
-            this.sphere.add(flame)
-        })
-
-        this.volumetricFire = new VolumetricFire(this.texturesArr.fireTexture)
-        this.volumetricFire.position.y = 2.65
-        this.volumetricFire.scale.set(0.7, 0.7, 0.7)
-        this.sphere.add(this.volumetricFire)
+        // this.generateFlames()
+        // this.flamesArr.forEach(flame => {
+        //     this.sphere.add(flame)
+        // })
+        // this.volumetricFire = new VolumetricFire(this.texturesArr.fireTexture)
+        // this.volumetricFire.position.y = 2.9
+        // this.volumetricFire.scale.set(1.3, 1.3, 1.3)
+        // this.removeVolumetricFire = false
+        // this.sphere.add(this.volumetricFire)
+        this.removeVolumetricFire = false
     }
 
     stopFire() {
-        this.flamesArr.forEach(flame => {
-            this.sphere.remove(flame)
-        })
-        this.flamesArr = []
-        this.sphere.remove(this.volumetricFire)
+        // this.flamesArr.forEach(flame => {
+        //     this.sphere.remove(flame)
+        // })
+        // this.flamesArr = []
+        this.removeVolumetricFire = true
+        // this.sphere.remove(this.volumetricFire)
     }
 
     startLevitation() {
@@ -375,6 +382,18 @@ export default class App {
         this.snowWind = new SnowWind(this.texturesArr.snowParticle)
         this.scene.add(this.snowWind)
 
+        // Fire
+        this.volumetricFire = new VolumetricFire(this.texturesArr.fireTexture)
+        this.volumetricFire.position.y = 2.9
+        this.volumetricFire.scale.set(this.volumetricScale, this.volumetricScale, this.volumetricScale)
+        this.sphere.add(this.volumetricFire)
+
+        // Tornados
+        this.generateTornados()
+        this.tornadosArr.forEach(tornado => {
+            this.sphere.add(tornado)
+        })
+
         // Listeners
         // window.addEventListener("mousemove", this.onMouseMove.bind(this), false)
         window.addEventListener("click", this.onMouseClick.bind(this), false)
@@ -414,23 +433,58 @@ export default class App {
         })
 
         // Flames
-        if (this.flamesArr.length > 0) {
+        // if (this.flamesArr.length > 0) {
+        if(this.volumetricFire){
             this.volumetricFire.animate(this.currentTime)
-
-            this.flamesArr.forEach(flame => {
-                flame.update(this.currentTime, deltaTime)
-            })
         }
 
-        // Tornados
-        if (this.tornadosArr.length > 0) {
-            this.tornadosClock.getDelta()
-            this.tornadosCurrentTime =
-                this.tornadosClock.elapsedTime - this.tornadosStartTime
+            // this.flamesArr.forEach(flame => {
+            //     flame.update(this.currentTime, deltaTime)
+            // })
+        // }
 
+        // Fire 
+        if(this.removeVolumetricFire === false){
+            this.volumetricScale += (1 - this.volumetricFire.scale.y) * 0.02
+            this.volumetricFire.scale.set(this.volumetricScale, this.volumetricScale, this.volumetricScale)
+            this.volumetricFire.position.y = 2.3 + (1 - this.volumetricScale) * -.5
+        } else {
+            this.volumetricScale += (0.001- this.volumetricFire.scale.x) * 0.02
+            this.volumetricFire.scale.set(this.volumetricScale, this.volumetricScale, this.volumetricScale)
+        }
+
+        this.volumetricFire.position.y = 2.3 + (0.001 - this.volumetricScale) * -.5
+
+
+
+        // Tornados
+        this.tornadosClock.getDelta()
+        this.tornadosCurrentTime =
+            this.tornadosClock.elapsedTime - this.tornadosStartTime
+
+        if(this.removeTornado){
+            this.tornadosArr.forEach(tornado => {
+                tornado.children.forEach(flake => {
+                    if( flake.material ) {
+                        if(flake.material.opacity < 0.1){ 
+                            tornado.visible = false 
+                        } else {
+                            flake.material.opacity += (- flake.material.opacity) * 0.05
+                        }
+                    }
+                })
+            }) 
+        }else {
             this.tornadosArr.forEach(tornado => {
                 tornado.update(this.tornadosCurrentTime)
-            })
+
+                tornado.children.forEach(flake => {
+                    if( flake.material ) {
+                            tornado.visible = true
+                            flake.material.opacity += (1 - flake.material.opacity) * 0.05
+                    }
+                })
+            }) 
         }
 
         // Song
