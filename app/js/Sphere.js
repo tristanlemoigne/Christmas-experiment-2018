@@ -5,11 +5,14 @@ export default class Sphere extends THREE.Group {
         this.children = children
         this.texture = texture
         this.envMap = envMap
+        this.canFloat = false
+
+        this._minPosition = 0
+        this._maxPosition = 0.8
         this.render()
     }
 
     render() {
-        // Add gold material to Constants ? :)
         const goldMaterial = new THREE.MeshPhongMaterial({
             color: 0xb38e41,
             reflectivity: 0,
@@ -43,5 +46,22 @@ export default class Sphere extends THREE.Group {
 
             this.add(child)
         })
+    }
+
+    update(canLevitate, time) {
+        if (canLevitate) {
+            this.rotation.y += 0.005
+
+            if (this.position.y < this._maxPosition && !this.canFloat) {
+                this.position.y += 0.005
+            } else {
+                this.canFloat = true
+                this.position.y += Math.sin(time) * 0.005
+            }
+        } else {
+            if (this.position.y > this._minPosition) {
+                this.position.y -= 0.005
+            }
+        }
     }
 }

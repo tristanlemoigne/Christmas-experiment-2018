@@ -12,8 +12,6 @@ import VolumetricFire from "./VolumetricFire"
 import Sphere from "./Sphere"
 import Socle from "./Socle"
 
-// let INTERSECTED
-
 export default class App {
     constructor() {
         // Scene
@@ -26,7 +24,8 @@ export default class App {
             1,
             200
         )
-        this.camera.position.set(-2, 4, 6)
+        // this.camera.position.set(-2, 4, 6)
+        this.camera.position.set(0, 4, 20)
         this.camera.lookAt(0, 2, 0)
         this.scene.add(this.camera)
 
@@ -62,15 +61,10 @@ export default class App {
 
         // Controls
         this.controls = new THREE.OrbitControls(
-            this.cameraTest,
+            this.camera,
             document.querySelector("canvas")
         )
         this.controls.target = new THREE.Vector3(0, 2, 0)
-
-        // Raycaster
-        // this.raycaster = new THREE.Raycaster()
-        // this.mouse = new THREE.Vector2()
-        // this.canClick = false
 
         // Scene variables
         this.modelsArr = []
@@ -277,16 +271,12 @@ export default class App {
 
     startLevitation() {
         this.levitationStartTime = this.levitationClock.getElapsedTime()
-
-        this.levitation = true
-        this.sphere.maxPosition = 0.8
-        this.canLevitate = false
+        this.canLevitate = true
         this.musicsArr.song.play()
     }
 
     stopLevitation() {
-        this.levitation = false
-        this.sphere.minPosition = 0
+        this.canLevitate = false
         this.musicsArr.song.stop()
     }
 
@@ -352,11 +342,7 @@ export default class App {
 
         // Socle
         const socleChildren = this.modelsArr.model.children
-        this.socle = new Socle(
-            socleChildren,
-            this.cameraTest,
-            this.startTornados
-        )
+        this.socle = new Socle(socleChildren, this.camera, this.startTornados)
         this.scene.add(this.socle)
 
         // Snow
@@ -415,33 +401,17 @@ export default class App {
         }
 
         // Sphere
-        if (this.levitation) {
-            this.levitationClock.getDelta()
-            this.levitationCurrentTime =
-                this.levitationClock.elapsedTime - this.levitationStartTime
-            this.sphere.rotation.y += 0.005
+        this.levitationClock.getDelta()
+        this.levitationCurrentTime =
+            this.levitationClock.elapsedTime - this.levitationStartTime
 
-            if (
-                this.sphere.position.y < this.sphere.maxPosition &&
-                !this.canLevitate
-            ) {
-                this.sphere.position.y += 0.005
-            } else {
-                this.canLevitate = true
-                this.sphere.position.y +=
-                    Math.sin(this.levitationCurrentTime) * 0.005
-            }
-        } else {
-            if (this.sphere.position.y > this.sphere.minPosition) {
-                this.sphere.position.y -= 0.005
-            }
-        }
+        this.sphere.update(this.canLevitate, this.levitationCurrentTime)
 
         // Socle
         this.socle.update()
 
         // Render scene
-        this.renderer.render(this.scene, this.cameraTest)
+        this.renderer.render(this.scene, this.camera)
         requestAnimationFrame(this.update.bind(this))
     }
 
