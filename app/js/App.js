@@ -86,65 +86,41 @@ export default class App {
 
     loadElements() {
         Promise.all([
-            this.loadModel("/app/assets/models/model.obj", "model"),
-            this.loadMusic("/app/assets/musics/song.mp3", "song"),
-            this.loadTexture("/app/assets/textures/spirale.jpg", "spirale"),
-            this.loadTexture("/app/assets/textures/fire.png", "fireTexture"),
-            this.loadTexture("/app/assets/textures/bump.jpg", "bumpMap"),
+            this.loadModel("./assets/models/model.obj", "model"),
+            this.loadMusic("./assets/musics/song.mp3", "song"),
+            this.loadTexture("./assets/textures/spirale.jpg", "spirale"),
+            this.loadTexture("./assets/textures/fire.png", "fireTexture"),
+            this.loadTexture("./assets/textures/bump.jpg", "bumpMap"),
             this.loadTexture(
-                "/app/assets/textures/fire-rgb.jpg",
+                "./assets/textures/fire-rgb.jpg",
                 "fireSpritesheet"
             ),
+            this.loadTexture("./assets/textures/fire-alpha.jpg", "fireAlpha"),
+            this.loadTexture("./assets/textures/flake-1.png", "flake1Texture"),
+            this.loadTexture("./assets/textures/flake-2.png", "flake2Texture"),
+            this.loadTexture("./assets/textures/flake-3.png", "flake3Texture"),
+            this.loadTexture("./assets/textures/flake-4.png", "flake4Texture"),
+            this.loadTexture("./assets/textures/flake-5.png", "flake5Texture"),
+            this.loadTexture("./assets/textures/flake-6.png", "flake6Texture"),
+            this.loadTexture("./assets/textures/flake-6.png", "flake6Texture"),
             this.loadTexture(
-                "/app/assets/textures/fire-alpha.jpg",
-                "fireAlpha"
-            ),
-            this.loadTexture(
-                "/app/assets/textures/flake-1.png",
-                "flake1Texture"
-            ),
-            this.loadTexture(
-                "/app/assets/textures/flake-2.png",
-                "flake2Texture"
-            ),
-            this.loadTexture(
-                "/app/assets/textures/flake-3.png",
-                "flake3Texture"
-            ),
-            this.loadTexture(
-                "/app/assets/textures/flake-4.png",
-                "flake4Texture"
-            ),
-            this.loadTexture(
-                "/app/assets/textures/flake-5.png",
-                "flake5Texture"
-            ),
-            this.loadTexture(
-                "/app/assets/textures/flake-6.png",
-                "flake6Texture"
-            ),
-            this.loadTexture(
-                "/app/assets/textures/flake-6.png",
-                "flake6Texture"
-            ),
-            this.loadTexture(
-                "/app/assets/textures/snowParticle.png",
+                "./assets/textures/snowParticle.png",
                 "snowParticle"
             ),
             this.loadTexture(
-                "/app/assets/textures/background-sky.jpg",
+                "./assets/textures/background-sky.jpg",
                 "backgroundSky"
             ),
             this.loadTexture(
-                "/app/assets/textures/background-stars.png",
+                "./assets/textures/background-stars.png",
                 "backgroundStars"
             ),
             this.loadTexture(
-                "/app/assets/textures/background-mountains.png",
+                "./assets/textures/background-mountains.png",
                 "backgroundMountains"
             ),
             this.loadTexture(
-                "/app/assets/textures/snow-normals.jpg",
+                "./assets/textures/snow-normals.jpg",
                 "snowNormals"
             )
         ]).then(() => {
@@ -350,10 +326,6 @@ export default class App {
         this.scene.add(this.backgroundStars)
         this.scene.add(this.backgroundMountains.clone())
 
-        // Helpers
-        let axesHelper = new THREE.AxesHelper(10)
-        this.scene.add(axesHelper)
-
         // Fog
         let fogColor = new THREE.Color(0x00003d)
         this.scene.fog = new THREE.Fog(fogColor, 0, 5)
@@ -374,10 +346,6 @@ export default class App {
         pointLight2.position.set(0, 20, 0)
         this.scene.add(pointLight2)
 
-        let pointLightHelper = new THREE.PointLightHelper(pointLight, 1)
-        this.scene.add(pointLightHelper)
-
-        // MESHES
         // Sphere
         const sphereChildren = this.modelsArr.model.children.slice(
             Math.max(this.modelsArr.model.children.length - 4, 1)
@@ -400,6 +368,7 @@ export default class App {
 
         // Snow wind
         this.snowWind = new SnowWind(this.texturesArr.snowParticle)
+        this.scene.add(this.snowWind)
 
         // Listeners
         // window.addEventListener("mousemove", this.onMouseMove.bind(this), false)
@@ -433,6 +402,11 @@ export default class App {
 
         // Update stars
         this.backgroundStars.rotation.y += 0.0007
+
+        // Snow wind
+        this.snowWind.children.forEach(particle => {
+            particle.update(this.currentTime)
+        })
 
         // Flames
         if (this.flamesArr.length > 0) {

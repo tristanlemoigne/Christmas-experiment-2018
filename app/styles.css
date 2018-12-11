@@ -1,8 +1,8 @@
 @font-face {
     font-family: "Christmas";
-    src: url("/app/assets/fonts/ChristmasTime.woff2") format("woff2"),
-        url("/app/assets/fonts/ChristmasTime.woff") format("woff"),
-        url("/app/assets/fonts/ChristmasTime.eot") format("woff");
+    src: url("/assets/fonts/ChristmasTime.woff2") format("woff2"),
+        url("/assets/fonts/ChristmasTime.woff") format("woff"),
+        url("/assets/fonts/ChristmasTime.eot") format("woff");
 }
 
 :root {
