@@ -25,7 +25,7 @@ export default class App {
             200
         )
         // this.camera.position.set(-2, 4, 6)
-        this.camera.position.set(0, 4, 20)
+        this.camera.position.set(0, 10, 20)
         this.camera.lookAt(0, 2, 0)
         this.scene.add(this.camera)
 
@@ -52,6 +52,7 @@ export default class App {
         this.renderer.setSize(window.innerWidth, window.innerHeight)
         this.renderer.shadowMap.enabled = true
         this.renderer.shadowMap.type = THREE.PCFShadowMap
+        this.renderer.sortObjects = false
 
         // Timer
         this.clock = new THREE.Clock()
@@ -117,8 +118,16 @@ export default class App {
                 "flake6Texture"
             ),
             this.loadTexture(
-                "/app/assets/textures/background.jpg",
-                "background"
+                "/app/assets/textures/background-sky.jpg",
+                "backgroundSky"
+            ),
+            this.loadTexture(
+                "/app/assets/textures/background-stars.png",
+                "backgroundStars"
+            ),
+            this.loadTexture(
+                "/app/assets/textures/background-mountains.png",
+                "backgroundMountains"
             ),
             this.loadTexture(
                 "/app/assets/textures/snow-normals.jpg",
@@ -284,15 +293,48 @@ export default class App {
         const explications = document.querySelector(".explications")
         explications.style.display = "none"
 
-        // Adding scene background
-        let sphereBackground = new THREE.Mesh(
+        // Sky background
+        this.backgroundSky = new THREE.Mesh(
             new THREE.SphereBufferGeometry(20, 32, 32),
-            new THREE.MeshBasicMaterial({ map: this.texturesArr.background })
+            new THREE.MeshBasicMaterial({ map: this.texturesArr.backgroundSky })
         )
-        sphereBackground.geometry.scale(-1, 1, 1)
-        sphereBackground.rotation.y = Math.PI / 2
-        sphereBackground.position.y += 2
-        this.scene.add(sphereBackground)
+        this.backgroundSky.geometry.scale(-1, 1, 1)
+        this.backgroundSky.rotation.y = Math.PI / 2
+        this.scene.add(this.backgroundSky)
+
+        // Mountains background
+        this.backgroundMountains = new THREE.Mesh(
+            new THREE.SphereBufferGeometry(18, 32, 32),
+            new THREE.MeshBasicMaterial({
+                map: this.texturesArr.backgroundMountains,
+                transparent: true
+            })
+        )
+        this.backgroundMountains.geometry.scale(-1, 1, 1)
+        this.backgroundMountains.rotation.y = Math.PI / 2
+        this.backgroundMountains.position.y += 2
+        this.scene.add(this.backgroundMountains)
+
+        // Stars background
+        this.backgroundStars = new THREE.Mesh(
+            new THREE.SphereBufferGeometry(19, 32, 32),
+            new THREE.MeshBasicMaterial({
+                map: this.texturesArr.backgroundStars,
+                transparent: true
+            })
+        )
+        this.backgroundStars.geometry.scale(-1, 1, 1)
+
+        // Cube camera
+        this.cubeCamera = new THREE.CubeCamera(1, 1000, 256)
+        this.cubeCamera.renderTarget.texture.minFilter =
+            THREE.LinearMipMapLinearFilter
+        this.cubeCamera.update(this.renderer, this.scene)
+
+        // Trick for envmap
+        this.scene.remove(this.backgroundMountains)
+        this.scene.add(this.backgroundStars)
+        this.scene.add(this.backgroundMountains.clone())
 
         // Helpers
         let axesHelper = new THREE.AxesHelper(10)
@@ -300,7 +342,8 @@ export default class App {
 
         // Fog
         let fogColor = new THREE.Color(0x00003d)
-        this.scene.fog = new THREE.Fog(fogColor, 0, 40)
+        // this.scene.fog = new THREE.Fog(fogColor, 0, 40)
+        this.scene.fog = new THREE.Fog(fogColor, 0, 10)
 
         // Lights
         let ambientLight = new THREE.AmbientLight(0xffffff, 0.5)
@@ -321,12 +364,6 @@ export default class App {
         let pointLightHelper = new THREE.PointLightHelper(pointLight, 1)
         this.scene.add(pointLightHelper)
 
-        // Cube camera
-        const cubeCamera = new THREE.CubeCamera(1, 1000, 512)
-        cubeCamera.renderTarget.texture.minFilter =
-            THREE.LinearMipMapLinearFilter
-        cubeCamera.update(this.renderer, this.scene)
-
         // MESHES
         // Sphere
         const sphereChildren = this.modelsArr.model.children.slice(
@@ -336,7 +373,7 @@ export default class App {
         this.sphere = new Sphere(
             sphereChildren,
             this.texturesArr.spirale,
-            cubeCamera.renderTarget.texture
+            this.cubeCamera.renderTarget.texture
         )
         this.scene.add(this.sphere)
 
@@ -379,6 +416,29 @@ export default class App {
         // Get current time
         let deltaTime = this.clock.getDelta()
         this.currentTime = this.clock.elapsedTime
+
+        // this.scene.fog = new THREE.Fog(fogColor, 0, 40)
+        if (this.scene.fog.far < 40) {
+            this.scene.fog.far += 0.3
+        }
+
+        this.backgroundStars.rotation.y += 0.003
+
+        // Camera traveling
+        // this.camera.position.set(0, 10, 20)  DEPART
+        // this.camera.position.set(-2, 4, 6)  ARRIVE
+
+        // if (this.camera.position.z > 6) {
+        //     this.camera.position.z -= 0.1
+        // }
+
+        // if (this.camera.position.y > 2) {
+        //     this.camera.position.y -= 0.1
+        // }
+
+        // if (this.camera.position.x > -2) {
+        //     this.camera.position.x -= 0.1
+        // }
 
         // Flames
         if (this.flamesArr.length > 0) {
