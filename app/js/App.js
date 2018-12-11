@@ -9,8 +9,10 @@ import Snow from "./Snow"
 import Fire from "./Fire"
 import Tornado from "./Tornado"
 import VolumetricFire from "./VolumetricFire"
+import Sphere from "./Sphere"
+import Socle from "./Socle"
 
-let INTERSECTED
+// let INTERSECTED
 
 export default class App {
     constructor() {
@@ -52,6 +54,12 @@ export default class App {
         this.renderer.shadowMap.enabled = true
         this.renderer.shadowMap.type = THREE.PCFShadowMap
 
+        // Timer
+        this.clock = new THREE.Clock()
+        this.tornadosClock = new THREE.Clock()
+        this.levitationClock = new THREE.Clock()
+        this.currentTime = 0
+
         // Controls
         this.controls = new THREE.OrbitControls(
             this.cameraTest,
@@ -60,9 +68,9 @@ export default class App {
         this.controls.target = new THREE.Vector3(0, 2, 0)
 
         // Raycaster
-        this.raycaster = new THREE.Raycaster()
-        this.mouse = new THREE.Vector2()
-        this.canClick = false
+        // this.raycaster = new THREE.Raycaster()
+        // this.mouse = new THREE.Vector2()
+        // this.canClick = false
 
         // Scene variables
         this.modelsArr = []
@@ -224,6 +232,13 @@ export default class App {
         }
     }
 
+    generateSnow() {
+        const snow = new Snow(this.texturesArr.snowNormals)
+        snow.receiveShadow = true
+        snow.rotation.x = Math.PI / 2
+        this.scene.add(snow)
+    }
+
     startTornados() {
         this.tornadosStartTime = this.tornadosClock.getElapsedTime()
 
@@ -316,119 +331,36 @@ export default class App {
         let pointLightHelper = new THREE.PointLightHelper(pointLight, 1)
         this.scene.add(pointLightHelper)
 
-        // Timer
-        this.clock = new THREE.Clock()
-        this.tornadosClock = new THREE.Clock()
-        this.levitationClock = new THREE.Clock()
-        this.currentTime = 0
-
         // Cube camera
-        let cubeCamera = new THREE.CubeCamera(1, 1000, 256)
+        const cubeCamera = new THREE.CubeCamera(1, 1000, 512)
         cubeCamera.renderTarget.texture.minFilter =
             THREE.LinearMipMapLinearFilter
         cubeCamera.update(this.renderer, this.scene)
 
         // MESHES
         // Sphere
-        this.sphere = new THREE.Group()
-        let sphereElements = this.modelsArr.model.children.slice(
+        const sphereChildren = this.modelsArr.model.children.slice(
             Math.max(this.modelsArr.model.children.length - 4, 1)
         )
 
-        sphereElements.forEach(element => {
-            this.sphere.add(element)
-        })
-
-        this.sphere.traverse(child => {
-            if (child instanceof THREE.Mesh) {
-                if (child.name === "Sphere") {
-                    child.material = new THREE.MeshStandardMaterial({
-                        transparent: true,
-                        opacity: 0.4,
-                        metalness: 0.8,
-                        roughness: 0,
-                        emissive: 0xffffff,
-                        emissiveIntensity: 0.3,
-                        envMap: cubeCamera.renderTarget.texture,
-                        depthWrite: false
-                    })
-
-                    child.castShadow = true
-                }
-
-                if (child.name === "Palissade") {
-                    child.material.map = this.texturesArr.spirale
-                }
-
-                if (child.name === "Armature" || child.name === "Capuchon") {
-                    child.material = new THREE.MeshPhongMaterial({
-                        color: 0xb38e41,
-                        envMap: cubeCamera.renderTarget.texture,
-                        combine: THREE.MixOperation,
-                        reflectivity: 0,
-                        specular: 0xeee8aa,
-                        shininess: 40,
-                        emissive: 0xffffff,
-                        emissiveIntensity: 0.06
-                    })
-                }
-            }
-        })
+        this.sphere = new Sphere(
+            sphereChildren,
+            this.texturesArr.spirale,
+            cubeCamera.renderTarget.texture
+        )
         this.scene.add(this.sphere)
 
         // Socle
-        this.socle = this.modelsArr.model
-        this.socle.traverse(child => {
-            if (child instanceof THREE.Mesh) {
-                if (child.name === "Socle") {
-                    child.material = new THREE.MeshStandardMaterial({
-                        color: 0x5b5855,
-                        roughness: 0.6,
-                        metalness: 0.3
-                    })
-                    child.receiveShadow = true
-                }
-            }
-        })
-
-        // Param pusher buttons
-        this.pushers = [
-            this.socle.children[3],
-            this.socle.children[6],
-            this.socle.children[9]
-        ]
-
-        this.pushers[0].onStart = this.startTornados.bind(this)
-        this.pushers[0].onStop = this.stopTornados.bind(this)
-        this.pushers[1].onStart = this.startFire.bind(this)
-        this.pushers[1].onStop = this.stopFire.bind(this)
-        this.pushers[2].onStart = this.startLevitation.bind(this)
-        this.pushers[2].onStop = this.stopLevitation.bind(this)
-
-        this.pushers.forEach(pusher => {
-            pusher.material = new THREE.MeshPhongMaterial({
-                color: 0xff1212,
-                transparent: true,
-                opacity: 0.9,
-                emissive: 0xffffff,
-                emissiveIntensity: 0
-            })
-            pusher.canClick = false
-        })
-
+        const socleChildren = this.modelsArr.model.children
+        this.socle = new Socle(
+            socleChildren,
+            this.cameraTest,
+            this.startTornados
+        )
         this.scene.add(this.socle)
 
         // Snow
-        const snow = new Snow(this.texturesArr.snowNormals)
-
-        snow.receiveShadow = true
-        snow.rotation.x = Math.PI / 2
-        this.scene.add(snow)
-
-        // Flames
-        // this.startFire()
-        // this.startTornados()
-        // this.startLevitation()
+        this.generateSnow()
 
         // GUI
         // const gui = new dat.GUI()
@@ -448,7 +380,7 @@ export default class App {
         // guiFlakes.open()
 
         // Listeners
-        window.addEventListener("mousemove", this.onMouseMove.bind(this), false)
+        // window.addEventListener("mousemove", this.onMouseMove.bind(this), false)
         window.addEventListener("click", this.onMouseClick.bind(this), false)
         window.addEventListener("resize", this.onWindowResize.bind(this), false)
         this.onWindowResize()
@@ -462,7 +394,7 @@ export default class App {
         let deltaTime = this.clock.getDelta()
         this.currentTime = this.clock.elapsedTime
 
-        // Update all elements
+        // Flames
         if (this.flamesArr.length > 0) {
             this.volumetricFire.animate(this.currentTime)
 
@@ -471,6 +403,7 @@ export default class App {
             })
         }
 
+        // Tornados
         if (this.tornadosArr.length > 0) {
             this.tornadosClock.getDelta()
             this.tornadosCurrentTime =
@@ -481,7 +414,7 @@ export default class App {
             })
         }
 
-        // Sphere levitation
+        // Sphere
         if (this.levitation) {
             this.levitationClock.getDelta()
             this.levitationCurrentTime =
@@ -504,39 +437,8 @@ export default class App {
             }
         }
 
-        // Socle interactions
-        this.raycaster.setFromCamera(this.mouse, this.cameraTest)
-        let intersects = this.raycaster.intersectObjects(this.pushers)
-
-        // for (var i = 0; i < intersects.length; i++) {
-        if (intersects.length > 0) {
-            if (intersects[0].object != INTERSECTED) {
-                this.renderer.domElement.style.cursor = "pointer"
-                // restore previous intersection object (if it exists) to its original color
-                if (INTERSECTED) {
-                    INTERSECTED.currentHex = INTERSECTED.material.color.getHex()
-                    INTERSECTED.material.color.setHex(INTERSECTED.currentHex)
-                }
-
-                // store reference to closest object as current intersection object
-                // store color of closest object (for later restoration)
-                // set a new color for closest object
-                INTERSECTED = intersects[0].object
-                INTERSECTED.canClick = true
-                INTERSECTED.material.emissiveIntensity = 0.2
-            }
-        } else {
-            // restore previous intersection object (if it exists) to its original color
-            if (INTERSECTED) {
-                INTERSECTED.canClick = false
-                INTERSECTED.material.color.set(INTERSECTED.currentHex)
-                INTERSECTED.material.emissiveIntensity = 0
-                this.renderer.domElement.style.cursor = "auto"
-            }
-
-            // remove previous intersection object reference by setting current intersection object to "nothing"
-            INTERSECTED = null
-        }
+        // Socle
+        this.socle.update()
 
         // Render scene
         this.renderer.render(this.scene, this.cameraTest)
@@ -544,24 +446,33 @@ export default class App {
     }
 
     onMouseClick() {
-        this.pushers.forEach(pusher => {
+        this.socle.pushers.forEach(pusher => {
             if (pusher.canClick) {
                 if (pusher.position.z === 0) {
                     pusher.position.z -= 0.05
                     pusher.material.color.setHex(0x00ff00)
-                    pusher.onStart()
+
+                    if (pusher.name === "Fire_pusher") {
+                        this.startFire()
+                    } else if (pusher.name === "Levitate_pusher") {
+                        this.startLevitation()
+                    } else if (pusher.name === "Flakes_pusher") {
+                        this.startTornados()
+                    }
                 } else {
                     pusher.position.z += 0.05
                     pusher.material.color.setHex(0xff1212)
-                    pusher.onStop()
+
+                    if (pusher.name === "Fire_pusher") {
+                        this.stopFire()
+                    } else if (pusher.name === "Levitate_pusher") {
+                        this.stopLevitation()
+                    } else if (pusher.name === "Flakes_pusher") {
+                        this.stopTornados()
+                    }
                 }
             }
         })
-    }
-
-    onMouseMove(event) {
-        this.mouse.x = (event.clientX / window.innerWidth) * 2 - 1
-        this.mouse.y = -(event.clientY / window.innerHeight) * 2 + 1
     }
 
     onWindowResize() {
