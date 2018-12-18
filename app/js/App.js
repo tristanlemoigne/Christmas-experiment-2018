@@ -4,7 +4,6 @@ import "../utils/OBJLoader"
 
 // Classes
 import Snow from "./Snow"
-import Fire from "./Fire"
 import Tornado from "./Tornado"
 import VolumetricFire from "./VolumetricFire"
 import Sphere from "./Sphere"
@@ -76,7 +75,6 @@ export default class App {
         // Scene variables
         this.modelsArr = []
         this.texturesArr = []
-        // this.flamesArr = []
         this.tornadosArr = []
         this.musicsArr = []
 
@@ -92,41 +90,65 @@ export default class App {
 
     loadElements() {
         Promise.all([
-            this.loadModel("./assets/models/model.obj", "model"),
-            this.loadMusic("./assets/musics/song.mp3", "song"),
-            this.loadTexture("./assets/textures/spirale.jpg", "spirale"),
-            this.loadTexture("./assets/textures/fire.png", "fireTexture"),
-            this.loadTexture("./assets/textures/bump.jpg", "bumpMap"),
+            this.loadModel("/app/assets/models/model.obj", "model"),
+            this.loadMusic("/app/assets/musics/song.mp3", "song"),
+            this.loadTexture("/app/assets/textures/spirale.jpg", "spirale"),
+            this.loadTexture("/app/assets/textures/fire.png", "fireTexture"),
+            this.loadTexture("/app/assets/textures/bump.jpg", "bumpMap"),
             this.loadTexture(
-                "./assets/textures/fire-rgb.jpg",
+                "/app/assets/textures/fire-rgb.jpg",
                 "fireSpritesheet"
             ),
-            this.loadTexture("./assets/textures/fire-alpha.jpg", "fireAlpha"),
-            this.loadTexture("./assets/textures/flake-1.png", "flake1Texture"),
-            this.loadTexture("./assets/textures/flake-2.png", "flake2Texture"),
-            this.loadTexture("./assets/textures/flake-3.png", "flake3Texture"),
-            this.loadTexture("./assets/textures/flake-4.png", "flake4Texture"),
-            this.loadTexture("./assets/textures/flake-5.png", "flake5Texture"),
-            this.loadTexture("./assets/textures/flake-6.png", "flake6Texture"),
-            this.loadTexture("./assets/textures/flake-6.png", "flake6Texture"),
             this.loadTexture(
-                "./assets/textures/snowParticle.png",
+                "/app/assets/textures/fire-alpha.jpg",
+                "fireAlpha"
+            ),
+            this.loadTexture(
+                "/app/assets/textures/flake-1.png",
+                "flake1Texture"
+            ),
+            this.loadTexture(
+                "/app/assets/textures/flake-2.png",
+                "flake2Texture"
+            ),
+            this.loadTexture(
+                "/app/assets/textures/flake-3.png",
+                "flake3Texture"
+            ),
+            this.loadTexture(
+                "/app/assets/textures/flake-4.png",
+                "flake4Texture"
+            ),
+            this.loadTexture(
+                "/app/assets/textures/flake-5.png",
+                "flake5Texture"
+            ),
+            this.loadTexture(
+                "/app/assets/textures/flake-6.png",
+                "flake6Texture"
+            ),
+            this.loadTexture(
+                "/app/assets/textures/flake-6.png",
+                "flake6Texture"
+            ),
+            this.loadTexture(
+                "/app/assets/textures/snowParticle.png",
                 "snowParticle"
             ),
             this.loadTexture(
-                "./assets/textures/background-sky.jpg",
+                "/app/assets/textures/background-sky.jpg",
                 "backgroundSky"
             ),
             this.loadTexture(
-                "./assets/textures/background-stars.png",
+                "/app/assets/textures/background-stars.png",
                 "backgroundStars"
             ),
             this.loadTexture(
-                "./assets/textures/background-mountains.png",
+                "/app/assets/textures/background-mountains.png",
                 "backgroundMountains"
             ),
             this.loadTexture(
-                "./assets/textures/snow-normals.jpg",
+                "/app/assets/textures/snow-normals.jpg",
                 "snowNormals"
             )
         ]).then(() => {
@@ -209,81 +231,11 @@ export default class App {
         }
     }
 
-    generateFlames() {
-        for (
-            let i = 0, rotation = Math.PI / 2;
-            i < 4;
-            i++, rotation += Math.PI / 2
-        ) {
-            let fire = new Fire(
-                this.texturesArr.fireSpritesheet,
-                this.texturesArr.fireAlpha
-            )
-
-            fire.scale.set(0.5, 0.5, 0.5)
-            fire.position.y = 2.5
-            fire.rotation.y = rotation
-            fire.position.x = Math.cos(rotation) * 0.7
-            fire.position.z = Math.sin(rotation) * 0.7
-
-            this.flamesArr.push(fire)
-        }
-    }
-
     generateSnow() {
         const snow = new Snow(this.texturesArr.snowNormals)
         snow.receiveShadow = true
         snow.rotation.x = Math.PI / 2
         this.scene.add(snow)
-    }
-
-    startTornados() {
-        this.tornadosStartTime = this.tornadosClock.getElapsedTime()
-
-        // this.generateTornados()
-        this.removeTornado = false
-        // this.tornadosArr.forEach(tornado => {
-        //     this.sphere.add(tornado)
-        // })
-    }
-
-    stopTornados() {
-        this.removeTornado = true
-        // this.tornadosArr.forEach(tornado => {
-        //     this.sphere.remove(tornado)
-        // })
-        // this.tornadosArr = []
-    }
-
-    startFire() {
-        // this.generateFlames()
-        // this.flamesArr.forEach(flame => {
-        //     this.sphere.add(flame)
-        // })
-        // this.volumetricFire = new VolumetricFire(this.texturesArr.fireTexture)
-        // this.volumetricFire.position.y = 2.9
-        // this.volumetricFire.scale.set(1.3, 1.3, 1.3)
-        // this.removeVolumetricFire = false
-        // this.sphere.add(this.volumetricFire)
-        this.removeVolumetricFire = false
-    }
-
-    stopFire() {
-        // this.flamesArr.forEach(flame => {
-        //     this.sphere.remove(flame)
-        // })
-        // this.flamesArr = []
-        this.removeVolumetricFire = true
-        // this.sphere.remove(this.volumetricFire)
-    }
-
-    startLevitation() {
-        this.levitationStartTime = this.levitationClock.getElapsedTime()
-        this.canLevitate = true
-    }
-
-    stopLevitation() {
-        this.canLevitate = false
     }
 
     launchScene() {
@@ -353,7 +305,7 @@ export default class App {
         pointLight2.position.set(0, 20, 0)
         this.scene.add(pointLight2)
 
-        // Start song 
+        // Start song
         this.musicsArr.song.setLoop(true)
         this.musicsArr.song.setVolume(this.volume)
         this.musicsArr.song.play()
@@ -385,7 +337,11 @@ export default class App {
         // Fire
         this.volumetricFire = new VolumetricFire(this.texturesArr.fireTexture)
         this.volumetricFire.position.y = 2.9
-        this.volumetricFire.scale.set(this.volumetricScale, this.volumetricScale, this.volumetricScale)
+        this.volumetricFire.scale.set(
+            this.volumetricScale,
+            this.volumetricScale,
+            this.volumetricScale
+        )
         this.sphere.add(this.volumetricFire)
 
         // Tornados
@@ -395,7 +351,6 @@ export default class App {
         })
 
         // Listeners
-        // window.addEventListener("mousemove", this.onMouseMove.bind(this), false)
         window.addEventListener("click", this.onMouseClick.bind(this), false)
         window.addEventListener("resize", this.onWindowResize.bind(this), false)
         this.onWindowResize()
@@ -409,7 +364,7 @@ export default class App {
         this.controls.update()
 
         // Get current time
-        let deltaTime = this.clock.getDelta()
+        this.clock.getDelta()
         this.currentTime = this.clock.elapsedTime
 
         // Camera traveling at start
@@ -433,66 +388,70 @@ export default class App {
         })
 
         // Flames
-        // if (this.flamesArr.length > 0) {
-        if(this.volumetricFire){
+        if (this.volumetricFire) {
             this.volumetricFire.animate(this.currentTime)
         }
 
-            // this.flamesArr.forEach(flame => {
-            //     flame.update(this.currentTime, deltaTime)
-            // })
-        // }
-
-        // Fire 
-        if(this.removeVolumetricFire === false){
+        // Fire
+        if (this.removeVolumetricFire === false) {
             this.volumetricScale += (1 - this.volumetricFire.scale.y) * 0.02
-            this.volumetricFire.scale.set(this.volumetricScale, this.volumetricScale, this.volumetricScale)
-            this.volumetricFire.position.y = 2.3 + (1 - this.volumetricScale) * -.5
+            this.volumetricFire.scale.set(
+                this.volumetricScale,
+                this.volumetricScale,
+                this.volumetricScale
+            )
+            this.volumetricFire.position.y =
+                2.3 + (1 - this.volumetricScale) * -0.5
         } else {
-            this.volumetricScale += (0.001- this.volumetricFire.scale.x) * 0.02
-            this.volumetricFire.scale.set(this.volumetricScale, this.volumetricScale, this.volumetricScale)
+            this.volumetricScale += (0.001 - this.volumetricFire.scale.x) * 0.02
+            this.volumetricFire.scale.set(
+                this.volumetricScale,
+                this.volumetricScale,
+                this.volumetricScale
+            )
         }
 
-        this.volumetricFire.position.y = 2.3 + (0.001 - this.volumetricScale) * -.5
-
-
+        this.volumetricFire.position.y =
+            2.3 + (0.001 - this.volumetricScale) * -0.5
 
         // Tornados
         this.tornadosClock.getDelta()
         this.tornadosCurrentTime =
             this.tornadosClock.elapsedTime - this.tornadosStartTime
 
-        if(this.removeTornado){
+        if (this.removeTornado) {
             this.tornadosArr.forEach(tornado => {
                 tornado.children.forEach(flake => {
-                    if( flake.material ) {
-                        if(flake.material.opacity < 0.1){ 
-                            tornado.visible = false 
+                    if (flake.material) {
+                        if (flake.material.opacity < 0.1) {
+                            tornado.visible = false
                         } else {
-                            flake.material.opacity += (- flake.material.opacity) * 0.05
+                            flake.material.opacity +=
+                                -flake.material.opacity * 0.05
                         }
                     }
                 })
-            }) 
-        }else {
+            })
+        } else {
             this.tornadosArr.forEach(tornado => {
                 tornado.update(this.tornadosCurrentTime)
 
                 tornado.children.forEach(flake => {
-                    if( flake.material ) {
-                            tornado.visible = true
-                            flake.material.opacity += (1 - flake.material.opacity) * 0.05
+                    if (flake.material) {
+                        tornado.visible = true
+                        flake.material.opacity +=
+                            (1 - flake.material.opacity) * 0.05
                     }
                 })
-            }) 
+            })
         }
 
         // Song
-        if(this.canLevitate){
+        if (this.canLevitate) {
             this.volume += (1 - this.musicsArr.song.getVolume()) * 0.02
             this.musicsArr.song.setVolume(this.volume)
         } else {
-            this.volume += (-this.musicsArr.song.getVolume()) * 0.02
+            this.volume += -this.musicsArr.song.getVolume() * 0.02
             this.musicsArr.song.setVolume(this.volume)
         }
 
@@ -519,22 +478,24 @@ export default class App {
                     pusher.material.color.setHex(0x00ff00)
 
                     if (pusher.name === "Fire_pusher") {
-                        this.startFire()
+                        this.removeVolumetricFire = false
                     } else if (pusher.name === "Levitate_pusher") {
-                        this.startLevitation()
+                        this.levitationStartTime = this.levitationClock.getElapsedTime()
+                        this.canLevitate = true
                     } else if (pusher.name === "Flakes_pusher") {
-                        this.startTornados()
+                        this.tornadosStartTime = this.tornadosClock.getElapsedTime()
+                        this.removeTornado = false
                     }
                 } else {
                     pusher.position.z += 0.05
                     pusher.material.color.setHex(0xff1212)
 
                     if (pusher.name === "Fire_pusher") {
-                        this.stopFire()
+                        this.removeVolumetricFire = true
                     } else if (pusher.name === "Levitate_pusher") {
-                        this.stopLevitation()
+                        this.canLevitate = false
                     } else if (pusher.name === "Flakes_pusher") {
-                        this.stopTornados()
+                        this.removeTornado = true
                     }
                 }
             }
